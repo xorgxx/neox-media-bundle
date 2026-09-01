@@ -1,0 +1,32 @@
+<div class="neox-media-picker-modal">
+    <div class="neox-media-picker-tools">
+        <input type="search" placeholder="Rechercher..." data-neox-media-library-target="search">
+        <select data-action="change">
+            <option value="">Tous</option>
+            <option value="image">Images</option>
+            <option value="video">Vidéos</option>
+            <option value="audio">Audio</option>
+            <option value="document">Documents</option>
+        </select>
+        <button type="button" class="neox-media-picker-upload-btn" data-picker-upload>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Importer
+        </button>
+        <input type="file" data-picker-file-input multiple accept="image/*,video/*,audio/*,.pdf,.doc,.docx" hidden>
+        <button type="button" class="neox-media-picker-link-btn" data-picker-link>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            Lien
+        </button>
+    </div>
+    <div class="neox-media-picker-link-row" data-picker-link-row hidden>
+        <input type="url" placeholder="https://www.youtube.com/watch?v=..." data-picker-url-input>
+        <button type="button" data-picker-url-add>Ajouter</button>
+    </div>
+
+    <div class="neox-media-grid-wrapper">
+        <div class="neox-media-overlay" data-neox-media-library-target="overlay" hidden>
+            <div class="neox-media-spinner"></div>
+        </div>
+        <div class="neox-media-grid" data-neox-media-library-target="grid"></div>
+    </div>
+</div>

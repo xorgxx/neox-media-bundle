@@ -1,0 +1,18 @@
+{% set standalone = standalone|default(false) %}
+{% if standalone %}
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{% block title %}Médiathèque{% endblock %}</title>
+    <link rel="stylesheet" href="{{ asset('bundles/neoxmedia/media-manager.css') }}?v={{ 'now'|date('U') }}">
+</head>
+<body>
+{% endif %}
+{% block neox_media_content %}{% endblock %}
+{% if standalone %}
+    {{ importmap('media-manager') }}
+</body>
+</html>
+{% endif %}

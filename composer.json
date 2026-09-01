@@ -1,0 +1,52 @@
+{
+  "name": "xorgxx/neox-media-bundle",
+  "description": "Reusable media manager for Symfony 7 and Symfony 8 with VichUploader, LiipImagine, Stimulus and Messenger.",
+  "type": "symfony-bundle",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.2",
+    "symfony/framework-bundle": "^7.0 || ^8.0",
+    "symfony/twig-bundle": "^7.0 || ^8.0",
+    "symfony/form": "^7.0 || ^8.0",
+    "symfony/validator": "^7.0 || ^8.0",
+    "symfony/messenger": "^7.0 || ^8.0",
+    "symfony/security-bundle": "^7.0 || ^8.0",
+    "doctrine/orm": "^3.0",
+    "doctrine/doctrine-bundle": "^2.12 || ^3.0",
+    "vich/uploader-bundle": "^2.9",
+    "liip/imagine-bundle": "^2.16",
+    "symfony/yaml": "^7.0 || ^8.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Neox\\MediaBundle\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Neox\\MediaBundle\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "symfony": {
+      "allow-contrib": true
+    }
+  },
+  "require-dev": {
+    "symfony/phpunit-bridge": "^7.0 || ^8.0",
+    "phpunit/phpunit": "^10.0 || ^11.0",
+    "phpstan/phpstan": "^2.0",
+    "phpstan/phpstan-symfony": "^2.0",
+    "phpstan/phpstan-doctrine": "^2.0",
+    "friendsofphp/php-cs-fixer": "^3.64",
+    "symfony/browser-kit": "^7.0 || ^8.0"
+  },
+  "conflict": {
+    "symfony/framework-bundle": "<7.0"
+  },
+  "suggest": {
+    "symfony/asset-mapper": "Recommended to expose the bundled Stimulus controllers and CSS.",
+    "symfony/mercure-bundle": "Optional live processing updates.",
+    "php-ffmpeg/php-ffmpeg": "Optional video/audio processing."
+  }
+}

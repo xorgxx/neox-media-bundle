@@ -1,0 +1,6 @@
+neox_media_controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: Neox\MediaBundle\Controller
+    type: attribute
+    prefix: '%neox_media.routes.prefix%'

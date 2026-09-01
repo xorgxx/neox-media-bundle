@@ -1,0 +1,61 @@
+{% extends '@NeoxMedia/manager/layout.html.twig' %}
+
+{% block neox_media_content %}
+<div
+    class="neox-media-manager"
+    data-controller="neox-media-library neox-media-upload"
+    data-neox-media-library-api-url-value="{{ path('neox_media_api_list') }}"
+    data-neox-media-library-update-url-value="{{ path('neox_media_update', {id: 0}) }}"
+    data-neox-media-library-delete-url-value="{{ path('neox_media_delete', {id: 0}) }}"
+    data-neox-media-library-bulk-delete-url-value="{{ path('neox_media_bulk_delete') }}"
+    data-neox-media-library-collection-create-url-value="{{ path('neox_media_collection_create') }}"
+    data-neox-media-library-collection-bulk-add-url-value="{{ path('neox_media_collection_bulk_add', {collection: 0}) }}"
+    data-neox-media-library-collection-remove-url-value="{{ path('neox_media_collection_remove', {id: 0}) }}"
+    data-neox-media-library-collection-bulk-remove-url-value="{{ path('neox_media_collection_bulk_remove', {collection: 0}) }}"
+    data-neox-media-library-upload-url-value="{{ path('neox_media_upload') }}"
+    data-neox-media-library-embed-url-value="{{ path('neox_media_embed_create') }}"
+    data-neox-media-upload-url-value="{{ path('neox_media_upload') }}"
+    data-neox-media-library-csrf-value="{{ csrf_token }}"
+    data-neox-media-upload-csrf-value="{{ csrf_token }}"
+>
+    {% include '@NeoxMedia/manager/_toolbar.html.twig' %}
+
+    <div class="neox-media-layout">
+        {% include '@NeoxMedia/manager/_sidebar.html.twig' %}
+
+        <main class="neox-media-main">
+            <div class="neox-media-dropzone"
+                 data-neox-media-upload-target="dropzone"
+                 data-action="dragover->neox-media-upload#dragover dragleave->neox-media-upload#dragleave drop->neox-media-upload#drop click->neox-media-upload#choose">
+                <strong>Déposer des fichiers ici</strong>
+                <span>ou cliquer pour sélectionner plusieurs fichiers</span>
+                <input type="file" multiple hidden data-neox-media-upload-target="input" data-action="change->neox-media-upload#inputChanged">
+            </div>
+
+            <progress class="neox-media-progress" data-neox-media-upload-target="progress" hidden value="0" max="100"></progress>
+            <div class="neox-media-error" data-neox-media-upload-target="error" hidden></div>
+            <div class="neox-media-status-bar" data-neox-media-library-target="statusBar" hidden></div>
+
+            <div class="neox-media-bulk-actions" data-neox-media-library-target="bulkActions" hidden>
+                <button type="button" class="danger" data-action="neox-media-library#bulkDelete">Supprimer la sélection</button>
+                <button type="button" class="danger neox-media-bulk-remove" data-action="neox-media-library#bulkRemoveFromCollection" hidden>Retirer de la collection</button>
+                <span>Ajouter à :</span>
+                {% for collection in collections %}
+                    <button type="button" data-action="neox-media-library#bulkAddToCollection" data-collection-id="{{ collection.id }}">{{ collection.name }}</button>
+                {% endfor %}
+            </div>
+
+            <div class="neox-media-grid-wrapper">
+                <div class="neox-media-overlay" data-neox-media-library-target="overlay" hidden>
+                    <div class="neox-media-spinner"></div>
+                </div>
+                <div class="neox-media-grid" data-neox-media-library-target="grid"></div>
+                <div class="neox-media-empty" data-neox-media-library-target="empty" hidden>Aucun média.</div>
+                <button type="button" class="neox-media-load-more" data-neox-media-library-target="loadMore" data-action="neox-media-library#loadMore" hidden>Charger plus</button>
+            </div>
+        </main>
+
+        {% include '@NeoxMedia/manager/_inspector.html.twig' %}
+    </div>
+</div>
+{% endblock %}

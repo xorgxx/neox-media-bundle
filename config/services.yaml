@@ -1,0 +1,44 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    Neox\MediaBundle\:
+        resource: '../src/'
+        exclude:
+            - '../src/Entity/'
+            - '../src/Enum/'
+            - '../src/Attribute/'
+            - '../src/Metadata/MediaFieldDefinition.php'
+            - '../src/DependencyInjection/'
+            - '../src/NeoxMediaBundle.php'
+
+    Neox\MediaBundle\Service\UploadValidator:
+        arguments:
+            $maxSizes: '%neox_media.upload.max_sizes%'
+            $allowedMime: '%neox_media.upload.allowed_mime%'
+            $allowedExtensions: '%neox_media.upload.allowed_extensions%'
+
+    Neox\MediaBundle\Service\UrlValidator:
+        arguments:
+            $allowedSchemes: '%neox_media.url.allowed_schemes%'
+            $allowedEmbedProviders: '%neox_media.embed.allowed_providers%'
+
+    Neox\MediaBundle\MessageHandler\ProcessMediaMessageHandler:
+        arguments:
+            $processors: !tagged_iterator neox_media.processor
+
+    Neox\MediaBundle\Storage\FilesystemStorageAdapter:
+        arguments:
+            $cdnPrefix: '%neox_media.storage.cdn_prefix%'
+            $projectDir: '%kernel.project_dir%'
+
+    Neox\MediaBundle\Service\MediaUrlGenerator:
+        arguments:
+            $storage: '@Neox\MediaBundle\Storage\FilesystemStorageAdapter'
+
+    Neox\MediaBundle\Embed\EmbedProviderRegistry:
+        arguments:
+            $providers: !tagged_iterator neox_media.embed_provider
+
+    Vich\UploaderBundle\Templating\Helper\UploaderHelperInterface: '@Vich\UploaderBundle\Templating\Helper\UploaderHelper'

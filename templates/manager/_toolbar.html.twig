@@ -1,0 +1,25 @@
+<header class="neox-media-toolbar">
+    <div>
+        <h1>Médiathèque</h1>
+        <small>Images, vidéos, audio et documents</small>
+    </div>
+
+    <div class="neox-media-toolbar-actions">
+        <input
+            type="search"
+            placeholder="Rechercher..."
+            data-neox-media-library-target="search"
+            data-action="input->neox-media-library#search"
+        >
+        <select data-neox-media-library-target="sortSelect" data-action="neox-media-library#sortChanged">
+            <option value="updatedAt">Plus récents</option>
+            <option value="createdAt">Plus anciens</option>
+            <option value="title">Titre (A-Z)</option>
+            <option value="size">Taille</option>
+        </select>
+        <button type="button" data-action="neox-media-library#toggleMultiSelect">Sélection multiple</button>
+        <button type="button" data-action="neox-media-library#toggleTheme" data-neox-media-library-target="themeBtn">🌙</button>
+        <button type="button" data-action="neox-media-upload#choose">+ Importer</button>
+        <button type="button" data-action="neox-media-library#addLink">+ Lien</button>
+    </div>
+</header>

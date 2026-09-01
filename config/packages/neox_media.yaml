@@ -1,0 +1,131 @@
+# Default configuration for NeoxMediaBundle
+# Place this in config/packages/neox_media.yaml of your host application
+
+neox_media:
+    upload:
+        # Max file size in bytes per media type group
+        # "default" is the fallback for types not explicitly listed
+        max_sizes:
+            image: 4194304        # 4 MB
+            video: 209715200      # 200 MB
+            audio: 52428800       # 50 MB
+            document: 2097152     # 2 MB
+            archive: 10485760     # 10 MB
+            default: 10485760     # 10 MB fallback
+
+        # Whitelist of allowed MIME types (checked against real MIME via mime_content_type)
+        allowed_mime:
+            - 'image/jpeg'
+            - 'image/png'
+            - 'image/gif'
+            - 'image/webp'
+            - 'image/svg+xml'
+            - 'image/avif'
+            - 'video/mp4'
+            - 'video/webm'
+            - 'video/ogg'
+            - 'audio/mpeg'
+            - 'audio/ogg'
+            - 'audio/wav'
+            - 'audio/webm'
+            - 'application/pdf'
+            - 'application/zip'
+            - 'text/plain'
+            - 'text/csv'
+            - 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            - 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            - 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+
+        # Whitelist of allowed file extensions
+        allowed_extensions:
+            - 'jpg'
+            - 'jpeg'
+            - 'png'
+            - 'gif'
+            - 'webp'
+            - 'svg'
+            - 'avif'
+            - 'mp4'
+            - 'webm'
+            - 'mov'
+            - 'ogv'
+            - 'mp3'
+            - 'ogg'
+            - 'wav'
+            - 'weba'
+            - 'pdf'
+            - 'zip'
+            - 'txt'
+            - 'csv'
+            - 'docx'
+            - 'xlsx'
+            - 'pptx'
+
+    url:
+        # Allowed URL schemes for source URL and EMBED
+        allowed_schemes:
+            - 'http'
+            - 'https'
+
+    embed:
+        # Whitelist of allowed embed provider hosts
+        allowed_providers:
+            - 'youtube.com'
+            - 'youtu.be'
+            - 'www.youtube.com'
+            - 'vimeo.com'
+            - 'player.vimeo.com'
+            - 'www.dailymotion.com'
+            - 'dailymotion.com'
+            - 'dai.ly'
+            - 'soundcloud.com'
+            - 'w.soundcloud.com'
+            - 'www.slideshare.net'
+
+    # -----------------------------------------------------------------------
+    # Storage adapter for REMOTE media source
+    # -----------------------------------------------------------------------
+    # The bundle ships a "filesystem" adapter that resolves URLs from a CDN
+    # prefix or local path. For S3/R2/MinIO, implement StorageInterface in
+    # your app and tag it with "neox_media.storage_adapter" (auto-applied
+    # via #[AutoconfigureTag] on the interface).
+    #
+    # Example 1 — local filesystem (default):
+    storage:
+        adapter: filesystem
+        cdn_prefix: ''           # empty = /uploads/media/
+    #
+    # Example 2 — CDN in front of filesystem:
+    #   storage:
+    #       adapter: filesystem
+    #       cdn_prefix: 'https://cdn.example.com/media'
+    #
+    # Example 3 — S3/R2/MinIO (custom adapter in your app):
+    #   # 1. Create your adapter:
+    #   # src/Storage/S3StorageAdapter.php
+    #   #   implements Neox\MediaBundle\Storage\StorageInterface
+    #   #
+    #   # 2. Register it (auto-tagged via #[AutoconfigureTag]):
+    #   # services:
+    #   #   App\Storage\S3StorageAdapter:
+    #   #       arguments:
+    #   #           $s3: '@aws.s3_client'
+    #   #           $bucket: '%env(S3_BUCKET)%'
+    #   #
+    #   # 3. Set adapter to null so the bundle doesn't register FilesystemStorageAdapter:
+    #   storage:
+    #       adapter: null
+    #
+    # Example 4 — disable storage entirely (fallback to Media.url):
+    #   storage:
+    #       adapter: null
+
+    # -----------------------------------------------------------------------
+    # Routes
+    # -----------------------------------------------------------------------
+    # The bundle loads its routes (Media Manager, upload, API) by default.
+    # Set enabled: false to use only the services and wire your own routes.
+    # Customize the prefix to mount the manager at a different path.
+    routes:
+        enabled: true
+        prefix: '/admin/media'    # e.g. '/manage/media', '/admin/medias', etc.

@@ -1,0 +1,14 @@
+# Disable script execution in uploads directory
+php_flag engine off
+AddType text/plain .php .php3 .php4 .php5 .php7 .phps .phtml .phar .cgi .pl .py .rb .sh .asp .aspx .jsp
+RemoveHandler .php .php3 .php4 .php5 .php7 .phps .phtml .phar .cgi .pl .py .rb .sh .asp .aspx .jsp
+RemoveType .php .php3 .php4 .php5 .php7 .phps .phtml .phar .cgi .pl .py .rb .sh .asp .aspx .jsp
+
+# Force download for all files
+ForceType application/octet-stream
+Header set Content-Disposition attachment
+
+# Deny access to hidden files
+<FilesMatch "^\.">
+    Deny from all
+</FilesMatch>

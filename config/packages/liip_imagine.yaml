@@ -1,0 +1,18 @@
+liip_imagine:
+    filter_sets:
+        neox_media_thumb:
+            quality: 85
+            filters:
+                thumbnail: { size: [200, 200], mode: outbound }
+        neox_media_small:
+            quality: 85
+            filters:
+                thumbnail: { size: [480, 480], mode: inset }
+        neox_media_medium:
+            quality: 85
+            filters:
+                thumbnail: { size: [1024, 1024], mode: inset }
+        neox_media_large:
+            quality: 90
+            filters:
+                thumbnail: { size: [1920, 1920], mode: inset }

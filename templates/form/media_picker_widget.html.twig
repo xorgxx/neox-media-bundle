@@ -1,0 +1,114 @@
+{% block neox_media_picker_widget %}
+{% if mode == 'compact' %}
+<style>
+.neox-media-form-picker-compact {
+    display: flex !important; flex-direction: row !important; align-items: center !important; gap: 10px !important;
+    border: none !important; box-shadow: none !important; background: transparent !important;
+    padding: 0 !important; overflow: visible !important;
+}
+.neox-media-form-picker-compact .neox-media-form-picker-zone {
+    flex: 0 0 40px !important; width: 40px !important; height: 40px !important; min-height: 0 !important;
+    padding: 0 !important; border-radius: var(--radius-sm) !important; overflow: hidden !important;
+    border: 1px solid var(--border) !important;
+}
+.neox-media-form-picker-compact .neox-media-form-picker-empty {
+    padding: 0 !important; gap: 0 !important; height: 100% !important;
+    display: flex !important; align-items: center !important; justify-content: center !important;
+}
+.neox-media-form-picker-compact .neox-media-form-picker-empty-text {
+    display: none !important;
+}
+.neox-media-form-picker-compact .neox-media-form-picker-icon-big svg {
+    width: 16px !important; height: 16px !important;
+}
+.neox-media-form-picker-compact .neox-media-form-picker-grid {
+    grid-template-columns: 1fr !important; gap: 0 !important; height: 100% !important;
+}
+.neox-media-form-picker-compact .neox-media-form-picker-card {
+    border: none !important; border-radius: 0 !important; height: 40px !important; box-shadow: none !important;
+}
+.neox-media-form-picker-compact .neox-media-form-picker-card-thumb {
+    height: 40px !important; aspect-ratio: 1/1 !important;
+}
+.neox-media-form-picker-compact .neox-media-form-picker-card-info,
+.neox-media-form-picker-compact .neox-media-form-picker-card-drag,
+.neox-media-form-picker-compact .neox-media-form-picker-card-actions {
+    display: none !important;
+}
+.neox-media-form-picker-compact .neox-media-form-picker-toolbar {
+    border-top: none !important; background: transparent !important; padding: 0 !important;
+    flex: 1 1 auto !important; width: auto !important;
+}
+</style>
+{% endif %}
+<div
+    class="neox-media-form-picker{{ mode == 'compact' ? ' neox-media-form-picker-compact' : '' }}"
+    data-controller="neox-media-picker"
+    data-neox-media-picker-url-value="{{ path('neox_media_picker') }}"
+    data-neox-media-picker-upload-url-value="{{ path('neox_media_upload') }}"
+    data-neox-media-picker-embed-url-value="{{ path('neox_media_embed_create') }}"
+    data-neox-media-picker-multiple-value="{{ multiple ? 'true' : 'false' }}"
+    data-neox-media-picker-mode-value="{{ mode|default('widget') }}"
+    data-neox-media-csrf-value="{{ csrf_token('neox_media') }}"
+    data-action="dragover->neox-media-picker#dragOver dragleave->neox-media-picker#dragLeave drop->neox-media-picker#drop"
+>
+    <input
+        type="hidden"
+        {{ block('widget_attributes') }}
+        value="{{ value }}"
+        data-neox-media-picker-target="value"
+    >
+    <input
+        type="file"
+        multiple="{{ multiple ? 'multiple' : '' }}"
+        hidden
+        data-neox-media-picker-target="fileInput"
+        data-action="change->neox-media-picker#onFileInputChange"
+    >
+    <div class="neox-media-form-picker-zone" data-neox-media-picker-target="zone">
+        <div class="neox-media-form-picker-empty" data-neox-media-picker-target="empty">
+            <div class="neox-media-form-picker-icon-big">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div class="neox-media-form-picker-empty-text">
+                <span data-neox-media-picker-target="label">
+                    {% if value %}Média #{{ value }}{% else %}Glissez des fichiers ici{% endif %}
+                </span>
+                <small class="neox-media-form-picker-empty-hint">ou utilisez les boutons ci-dessous</small>
+            </div>
+        </div>
+        <div class="neox-media-form-picker-grid" data-neox-media-picker-target="preview" hidden></div>
+        <div class="neox-media-form-picker-loader" data-neox-media-picker-target="loader" hidden>
+            <div class="neox-media-form-picker-spinner"></div>
+            <small data-neox-media-picker-target="loaderText">Chargement...</small>
+        </div>
+    </div>
+    <div class="neox-media-form-picker-toolbar">
+        <span class="neox-media-form-picker-count" data-neox-media-picker-target="count">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+            <span class="neox-media-form-picker-count-text" data-neox-media-picker-target="countText">Aucun fichier sélectionné</span>
+        </span>
+        <div class="neox-media-form-picker-toolbar-actions">
+            <button type="button" class="neox-media-form-picker-btn neox-media-form-picker-btn-danger" data-neox-media-picker-target="removeAllBtn" data-action="neox-media-picker#removeAll" hidden title="Retirer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                <span class="neox-media-form-picker-btn-label">Retirer</span>
+            </button>
+            <button type="button" class="neox-media-form-picker-btn" data-action="neox-media-picker#triggerUpload" title="Upload">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span class="neox-media-form-picker-btn-label">Upload</span>
+            </button>
+            <button type="button" class="neox-media-form-picker-btn neox-media-form-picker-btn-primary" data-action="neox-media-picker#open" title="Médiathèque">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span class="neox-media-form-picker-btn-label">Médiathèque...</span>
+            </button>
+        </div>
+    </div>
+    {% if errors|default([])|length > 0 %}
+    <div class="neox-media-form-picker-errors">
+        {% for error in errors %}
+        <div class="neox-media-form-picker-error">⚠️ {{ error.message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

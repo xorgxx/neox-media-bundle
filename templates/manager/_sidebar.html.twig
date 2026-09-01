@@ -1,0 +1,24 @@
+<aside class="neox-media-sidebar">
+    <nav>
+        <button data-action="neox-media-library#filterType" data-type="">Tous</button>
+        <button data-action="neox-media-library#filterType" data-type="image">Images</button>
+        <button data-action="neox-media-library#filterType" data-type="video">Vidéos</button>
+        <button data-action="neox-media-library#filterType" data-type="audio">Audio</button>
+        <button data-action="neox-media-library#filterType" data-type="document">Documents</button>
+    </nav>
+
+    <hr>
+
+    <div class="neox-media-collections-header">
+        <h3>Collections</h3>
+        <button type="button" class="neox-media-collections-add" data-action="neox-media-library#createCollection">+</button>
+    </div>
+    <div class="neox-media-collections"
+         data-neox-media-library-target="collections">
+        {% for collection in collections %}
+            <button type="button" data-id="{{ collection.id }}" data-action="click->neox-media-library#filterCollection" data-collection-id="{{ collection.id }}">{{ collection.name }}</button>
+        {% else %}
+            <small>Aucune collection</small>
+        {% endfor %}
+    </div>
+</aside>

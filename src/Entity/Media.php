@@ -1,0 +1,171 @@
+<?php
+
+namespace Neox\MediaBundle\Entity;
+
+use DateTimeImmutable;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+use Neox\MediaBundle\Enum\MediaSource;
+use Neox\MediaBundle\Enum\MediaStatus;
+use Neox\MediaBundle\Enum\MediaType;
+use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+
+#[ORM\Entity(repositoryClass: \Neox\MediaBundle\Repository\MediaRepository::class)]
+#[ORM\Table(name: 'neox_media')]
+#[Vich\Uploadable]
+class Media
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 36, unique: true)]
+    private string $uuid;
+
+    #[Vich\UploadableField(
+        mapping: 'neox_media',
+        fileNameProperty: 'filename',
+        size: 'size',
+        mimeType: 'mimeType',
+        originalName: 'originalName'
+    )]
+    private ?File $file = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $filename = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $originalName = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $mimeType = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $size = null;
+
+    #[ORM\Column(enumType: MediaType::class)]
+    private MediaType $type = MediaType::OTHER;
+
+    #[ORM\Column(enumType: MediaSource::class)]
+    private MediaSource $source = MediaSource::FILE;
+
+    #[ORM\Column(enumType: MediaStatus::class)]
+    private MediaStatus $status = MediaStatus::PENDING;
+
+    #[ORM\Column(length: 2048, nullable: true)]
+    private ?string $url = null;
+
+    #[ORM\Column(length: 2048, nullable: true)]
+    private ?string $embedUrl = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $provider = null;
+
+    #[ORM\Column(length: 1024, nullable: true)]
+    private ?string $storageKey = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $width = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $height = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $duration = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $title = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $alt = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $description = null;
+
+    /** @var array<string, mixed> */
+    #[ORM\Column(type: Types::JSON)]
+    private array $metadata = [];
+
+    #[ORM\Column]
+    private DateTimeImmutable $createdAt;
+
+    #[ORM\Column]
+    private DateTimeImmutable $updatedAt;
+
+    public function __construct()
+    {
+        $this->uuid = self::uuidV4();
+        $this->createdAt = new DateTimeImmutable();
+        $this->updatedAt = new DateTimeImmutable();
+    }
+
+    private static function uuidV4(): string
+    {
+        $data = random_bytes(16);
+        $data[6] = chr((ord($data[6]) & 0x0f) | 0x40);
+        $data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+    }
+
+    public function getId(): ?int { return $this->id; }
+    public function getUuid(): string { return $this->uuid; }
+    public function getFile(): ?File { return $this->file; }
+
+    public function setFile(?File $file): self
+    {
+        $this->file = $file;
+        if ($file !== null) {
+            $this->updatedAt = new DateTimeImmutable();
+            $this->source = MediaSource::FILE;
+        }
+        return $this;
+    }
+
+    public function getFilename(): ?string { return $this->filename; }
+    public function setFilename(?string $filename): self { $this->filename = $filename; return $this; }
+    public function getOriginalName(): ?string { return $this->originalName; }
+    public function setOriginalName(?string $v): self { $this->originalName = $v; return $this; }
+    public function getMimeType(): ?string { return $this->mimeType; }
+    public function setMimeType(?string $v): self { $this->mimeType = $v; return $this; }
+    public function getSize(): ?int { return $this->size; }
+    public function setSize(?int $v): self { $this->size = $v; return $this; }
+    public function getType(): MediaType { return $this->type; }
+    public function setType(MediaType $v): self { $this->type = $v; return $this; }
+    public function getSource(): MediaSource { return $this->source; }
+    public function setSource(MediaSource $v): self { $this->source = $v; return $this; }
+    public function getStatus(): MediaStatus { return $this->status; }
+    public function setStatus(MediaStatus $v): self { $this->status = $v; return $this; }
+    public function getUrl(): ?string { return $this->url; }
+    public function setUrl(?string $v): self { $this->url = $v; return $this; }
+    public function getEmbedUrl(): ?string { return $this->embedUrl; }
+    public function setEmbedUrl(?string $v): self { $this->embedUrl = $v; return $this; }
+    public function getProvider(): ?string { return $this->provider; }
+    public function setProvider(?string $v): self { $this->provider = $v; return $this; }
+    public function getStorageKey(): ?string { return $this->storageKey; }
+    public function setStorageKey(?string $v): self { $this->storageKey = $v; return $this; }
+    public function getWidth(): ?int { return $this->width; }
+    public function setWidth(?int $v): self { $this->width = $v; return $this; }
+    public function getHeight(): ?int { return $this->height; }
+    public function setHeight(?int $v): self { $this->height = $v; return $this; }
+    public function getDuration(): ?float { return $this->duration; }
+    public function setDuration(?float $v): self { $this->duration = $v; return $this; }
+    public function getTitle(): ?string { return $this->title; }
+    public function setTitle(?string $v): self { $this->title = $v; return $this; }
+    public function getAlt(): ?string { return $this->alt; }
+    public function setAlt(?string $v): self { $this->alt = $v; return $this; }
+    public function getDescription(): ?string { return $this->description; }
+    public function setDescription(?string $v): self { $this->description = $v; return $this; }
+    /** @return array<string, mixed> */
+    public function getMetadata(): array { return $this->metadata; }
+    /** @param array<string, mixed> $v */
+    public function setMetadata(array $v): self { $this->metadata = $v; return $this; }
+    public function getCreatedAt(): DateTimeImmutable { return $this->createdAt; }
+    public function getUpdatedAt(): DateTimeImmutable { return $this->updatedAt; }
+    public function setUpdatedAt(?DateTimeImmutable $value = null): self
+    {
+        $this->updatedAt = $value ?? new DateTimeImmutable();
+        return $this;
+    }
+}
