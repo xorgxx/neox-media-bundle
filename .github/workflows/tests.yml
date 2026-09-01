@@ -23,13 +23,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           tools: composer:v2
 
+      - run: composer global config --no-plugins allow-plugins.symfony/flex true
       - run: composer require --no-update symfony/framework-bundle:${{ matrix.symfony }}
       - run: composer update --prefer-dist --no-interaction
       - run: composer validate --strict
