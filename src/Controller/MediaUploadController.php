@@ -60,9 +60,9 @@ final class MediaUploadController extends AbstractController
                 continue;
             }
 
-            $violation = $this->validator->validate($file);
-            if ($violation !== null) {
-                $errors[] = $violation;
+            $validation = $this->validator->validateWithRisk($file);
+            if ($validation->isBlocked()) {
+                $errors[] = $validation->message;
                 continue;
             }
 
