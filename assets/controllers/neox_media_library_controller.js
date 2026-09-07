@@ -5,7 +5,7 @@ import { escapeHtml, formatFileSize } from '../helpers/utils.js';
 export default class extends Controller {
     static targets = [
         'grid', 'empty', 'search', 'inspector', 'preview',
-        'title', 'alt', 'description', 'meta', 'loadMore', 'sortSelect', 'statusBar',
+        'title', 'alt', 'description', 'meta', 'downloadBtn', 'loadMore', 'sortSelect', 'statusBar',
         'overlay', 'saveBtn', 'removeBtn', 'collections', 'bulkActions', 'themeBtn'
     ];
 
@@ -314,6 +314,7 @@ export default class extends Controller {
             this.altTarget.value = media.alt || '';
             this.descriptionTarget.value = media.description || '';
             this.metaTarget.textContent = `${media.mimeType || media.type} · ${formatFileSize(media.size)}${media.width ? ` · ${media.width}×${media.height}` : ''}${media.sandboxed ? ` · Sandbox: ${media.riskReason || media.riskLevel}` : ''}`;
+            this.updateDownloadButton(media);
         }
     }
 
@@ -413,7 +414,7 @@ export default class extends Controller {
         if (!this.selected) return;
         this.setBtnLoading(this.saveBtnTarget, true);
         try {
-            await fetch(this.endpoint(this.updateUrlValue, this.selected.id), {
+            const response = await fetch(this.endpoint(this.updateUrlValue, this.selected.id), {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -426,6 +427,13 @@ export default class extends Controller {
                     description: this.descriptionTarget.value
                 })
             });
+
+            if (!response.ok) {
+                swalToast('error', 'Impossible d’enregistrer le média');
+                return;
+            }
+
+            swalToast('success', 'Média enregistré');
 
             this.selected.title = this.titleTarget.value;
             this.selected.alt = this.altTarget.value;
@@ -468,6 +476,18 @@ export default class extends Controller {
         }
     }
 
+    download() {
+        if (!this.selected || !this.selected.url || this.selected.sandboxed) return;
+
+        const link = document.createElement('a');
+        link.href = this.selected.url;
+        link.download = this.selected.name || this.selected.filename || `media-${this.selected.id}`;
+        link.rel = 'noopener';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    }
+
     copyUrl() {
         if (!this.selected) return;
         const url = this.selected.url || '';
@@ -475,6 +495,16 @@ export default class extends Controller {
         navigator.clipboard.writeText(url).then(() => {
             this.dispatch('url-copied', { detail: { url } });
         });
+    }
+
+    updateDownloadButton(media) {
+        if (!this.hasDownloadBtnTarget) return;
+
+        const canDownload = Boolean(media.url) && !media.sandboxed;
+        this.downloadBtnTarget.disabled = !canDownload;
+        this.downloadBtnTarget.title = canDownload
+            ? 'Télécharger ce média'
+            : 'Téléchargement indisponible pour ce média';
     }
 
     showUploadError(event) {

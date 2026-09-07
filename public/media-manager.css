@@ -281,13 +281,20 @@ button { cursor: pointer; border: none; }
 .neox-media-meta { color: var(--text-muted); font-size: 11px; margin: 14px 0; line-height: 1.6; }
 .neox-media-inspector-actions { display: flex; gap: 8px; margin-top: 16px; }
 .neox-media-inspector-actions button {
-    padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
-    transition: var(--transition);
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; padding: 0; border-radius: var(--radius-sm);
+    transition: var(--transition); cursor: pointer;
 }
-.neox-media-inspector-actions .saveBtn {
+.neox-media-inspector-actions button svg { display: block; }
+.neox-media-inspector-actions .saveBtn,
+.neox-media-inspector-actions .downloadBtn {
     background: var(--accent); color: var(--accent-contrast);
 }
-.neox-media-inspector-actions .saveBtn:hover { background: var(--accent-hover); }
+.neox-media-inspector-actions .saveBtn:hover,
+.neox-media-inspector-actions .downloadBtn:hover { background: var(--accent-hover); }
+.neox-media-inspector-actions .downloadBtn:disabled {
+    opacity: .5; cursor: not-allowed; background: var(--surface-2); color: var(--text-muted);
+}
 .neox-media-inspector-actions .removeBtn {
     background: var(--surface-2); color: var(--error-text); border: 1px solid var(--error-border);
 }
