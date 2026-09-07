@@ -6,6 +6,8 @@ Route principale :
 /admin/media
 ```
 
+Le Media Manager standalone accepte un paramètre local optionnel  `return_url`, par exemple /admin/media?return_url=/admin/products. Quand il est présent, le bouton Retour en haut à gauche utilise cette URL ; sinon il revient via l'historique du navigateur.
+
 Le Media Manager fournit :
 
 - grille responsive ;

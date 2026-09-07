@@ -35,6 +35,7 @@ export default class extends Controller {
         this.selectedIds = new Set();
         this.multiSelectMode = false;
         this.collectionId = null;
+        this.sandboxed = false;
         this.initTheme();
         this.load();
 
@@ -73,6 +74,15 @@ export default class extends Controller {
         }
     }
 
+    goBack(event) {
+        const returnUrl = event.currentTarget.dataset.returnUrl;
+        if (returnUrl) {
+            window.location.href = returnUrl;
+            return;
+        }
+
+        window.history.back();
+    }
     async addLink() {
         const Swal = await loadSwal();
 
@@ -179,6 +189,7 @@ export default class extends Controller {
         if (this.type) params.set('type', this.type);
         if (this.sort) params.set('sort', this.sort);
         if (this.collectionId) params.set('collection', this.collectionId);
+        if (this.sandboxed) params.set('sandboxed', '1');
         params.set('limit', this.limit);
         params.set('offset', this.offset);
 
@@ -221,9 +232,10 @@ export default class extends Controller {
             const thumb = this.thumbnail(media);
             const title = escapeHtml(media.title || media.name || `#${media.id}`);
             const statusBadge = this.statusBadge(media.status);
+            const sandboxBadge = media.sandboxed ? '<span class="neox-media-sandbox-card-badge">Sandbox</span>' : '';
 
             card.innerHTML = `
-                <div class="neox-media-card-preview">${thumb}${statusBadge}</div>
+                <div class="neox-media-card-preview">${thumb}${statusBadge}${sandboxBadge}</div>
                 <div class="neox-media-card-body">
                     <strong>${title}</strong>
                     <small>${escapeHtml(media.type)} · ${formatFileSize(media.size)}</small>
@@ -301,7 +313,7 @@ export default class extends Controller {
             this.titleTarget.value = media.title || '';
             this.altTarget.value = media.alt || '';
             this.descriptionTarget.value = media.description || '';
-            this.metaTarget.textContent = `${media.mimeType || media.type} · ${formatFileSize(media.size)}${media.width ? ` · ${media.width}×${media.height}` : ''}`;
+            this.metaTarget.textContent = `${media.mimeType || media.type} · ${formatFileSize(media.size)}${media.width ? ` · ${media.width}×${media.height}` : ''}${media.sandboxed ? ` · Sandbox: ${media.riskReason || media.riskLevel}` : ''}`;
         }
     }
 
@@ -363,6 +375,16 @@ export default class extends Controller {
 
     filterType(event) {
         this.type = event.currentTarget.dataset.type || '';
+        this.sandboxed = false;
+        this.updateSidebarActive(event.currentTarget);
+        this.load();
+    }
+
+    filterSandbox(event) {
+        this.sandboxed = !this.sandboxed;
+        this.type = '';
+        this.collectionId = null;
+        this.updateSidebarActive(this.sandboxed ? event.currentTarget : null);
         this.load();
     }
 
@@ -371,6 +393,10 @@ export default class extends Controller {
         this.load();
     }
 
+    updateSidebarActive(activeButton) {
+        this.element.querySelectorAll('.neox-media-sidebar button.active').forEach(el => el.classList.remove('active'));
+        if (activeButton) activeButton.classList.add('active');
+    }
     sortChanged() {
         this.sort = this.sortSelectTarget.value;
         this.load();

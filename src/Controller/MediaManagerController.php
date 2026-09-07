@@ -35,20 +35,23 @@ final class MediaManagerController extends AbstractController
     }
 
     #[Route('', name: 'index', methods: ['GET'])]
-    public function index(MediaCollectionRepository $collections): Response
+    public function index(Request $request, MediaCollectionRepository $collections, MediaRepository $mediaRepository): Response
     {
         return $this->render('@NeoxMedia/manager/index.html.twig', [
             'collections' => $collections->findBy([], ['name' => 'ASC']),
+            'sandbox_count' => $mediaRepository->countSandboxed(),
             'csrf_token' => $this->csrf->getToken('neox_media')->getValue(),
+            'return_url' => $this->resolveReturnUrl($request),
             'standalone' => true,
         ]);
     }
 
     #[Route('/picker', name: 'picker', methods: ['GET'])]
-    public function picker(MediaCollectionRepository $collections): Response
+    public function picker(MediaCollectionRepository $collections, MediaRepository $mediaRepository): Response
     {
         return $this->render('@NeoxMedia/manager/_picker.html.twig', [
             'collections' => $collections->findBy([], ['name' => 'ASC']),
+            'sandbox_count' => $mediaRepository->countSandboxed(),
             'csrf_token' => $this->csrf->getToken('neox_media')->getValue(),
             'standalone' => false,
         ]);
@@ -65,14 +68,18 @@ final class MediaManagerController extends AbstractController
             $type = MediaType::tryFrom((string) $request->query->get('type'));
         }
 
-        $limit = $request->query->getInt('limit', 60);
-        $offset = $request->query->getInt('offset', 0);
-        $sort = $request->query->get('sort', 'updatedAt');
+        $limit = max(1, min($request->query->getInt('limit', 60), 200));
+        $offset = max(0, $request->query->getInt('offset', 0));
+        $sort = (string) $request->query->get('sort', 'updatedAt');
+        if (!in_array($sort, ['updatedAt', 'createdAt', 'title', 'size'], true)) {
+            $sort = 'updatedAt';
+        }
         $q = $request->query->get('q');
         $collectionId = $request->query->getInt('collection') ?: null;
+        $sandboxed = $request->query->getBoolean('sandboxed') ? true : null;
 
-        $items = $repository->searchLibrary($q, $type, $limit, $offset, $sort, $collectionId);
-        $total = $repository->countLibrary($q, $type, $collectionId);
+        $items = $repository->searchLibrary($q, $type, $limit, $offset, $sort, $collectionId, $sandboxed);
+        $total = $repository->countLibrary($q, $type, $collectionId, $sandboxed);
 
         $data = [
             'items' => array_map(
@@ -85,6 +92,9 @@ final class MediaManagerController extends AbstractController
                     'type' => $m->getType()->value,
                     'source' => $m->getSource()->value,
                     'status' => $m->getStatus()->value,
+                    'sandboxed' => $m->isSandboxed(),
+                    'riskLevel' => $m->getRiskLevel()->value,
+                    'riskReason' => $m->getRiskReason(),
                     'mimeType' => $m->getMimeType(),
                     'size' => $m->getSize(),
                     'url' => $urls->url($m),
@@ -128,6 +138,9 @@ final class MediaManagerController extends AbstractController
             'type' => $media->getType()->value,
             'source' => $media->getSource()->value,
             'status' => $media->getStatus()->value,
+            'sandboxed' => $media->isSandboxed(),
+            'riskLevel' => $media->getRiskLevel()->value,
+            'riskReason' => $media->getRiskReason(),
             'mimeType' => $media->getMimeType(),
             'size' => $media->getSize(),
             'url' => $urls->url($media),
@@ -452,6 +465,20 @@ final class MediaManagerController extends AbstractController
         $em->flush();
 
         return $this->json(['ok' => true]);
+    }
+
+    private function resolveReturnUrl(Request $request): ?string
+    {
+        $returnUrl = $request->query->get('return_url') ?: $request->query->get('returnUrl');
+        if (!is_string($returnUrl) || $returnUrl === '') {
+            return null;
+        }
+
+        if (!str_starts_with($returnUrl, '/') || str_starts_with($returnUrl, '//')) {
+            return null;
+        }
+
+        return $returnUrl;
     }
 
     #[Route('/embed', name: 'embed_create', methods: ['POST'])]

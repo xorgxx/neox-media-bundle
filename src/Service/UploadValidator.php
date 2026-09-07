@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Neox\MediaBundle\Service;
 
+use Neox\MediaBundle\Enum\MediaRiskLevel;
 use Neox\MediaBundle\Enum\MediaType;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -19,27 +20,49 @@ final class UploadValidator
      * @param array<string, int> $maxSizes          e.g. ['image' => 4194304, 'video' => 209715200, ...]
      * @param array<int, string> $allowedMime
      * @param array<int, string> $allowedExtensions
+     * @param array<int, string> $sandboxMime
+     * @param array<int, string> $sandboxExtensions
      */
     public function __construct(
         private readonly array $maxSizes,
         private readonly array $allowedMime,
         private readonly array $allowedExtensions,
+        private readonly bool $sandboxEnabled = true,
+        private readonly array $sandboxMime = [],
+        private readonly array $sandboxExtensions = [],
     ) {
     }
 
     public function validate(UploadedFile $file): ?string
     {
+        $result = $this->validateWithRisk($file);
+
+        return $result->isBlocked() ? $result->message : null;
+    }
+
+    public function validateWithRisk(UploadedFile $file): UploadValidationResult
+    {
         $error = $this->validateSize($file);
         if ($error !== null) {
-            return $error;
+            return new UploadValidationResult(MediaRiskLevel::BLOCKED, $error);
         }
 
         $error = $this->validateExtension($file);
         if ($error !== null) {
-            return $error;
+            return new UploadValidationResult(MediaRiskLevel::BLOCKED, $error);
         }
 
-        return $this->validateMime($file);
+        $error = $this->validateMime($file);
+        if ($error !== null) {
+            return new UploadValidationResult(MediaRiskLevel::BLOCKED, $error);
+        }
+
+        $sandboxReason = $this->detectSandboxReason($file);
+        if ($sandboxReason !== null) {
+            return new UploadValidationResult(MediaRiskLevel::SUSPICIOUS, $sandboxReason);
+        }
+
+        return new UploadValidationResult(MediaRiskLevel::SAFE);
     }
 
     public function detectRealMime(UploadedFile $file): string|false
@@ -81,7 +104,7 @@ final class UploadValidator
 
     private function validateExtension(UploadedFile $file): ?string
     {
-        $extension = strtolower($file->getClientOriginalExtension() ?: $file->guessExtension() ?? '');
+        $extension = $this->extension($file);
 
         if ($extension === '') {
             return 'File has no extension.';
@@ -110,5 +133,29 @@ final class UploadValidator
         }
 
         return null;
+    }
+
+    private function detectSandboxReason(UploadedFile $file): ?string
+    {
+        if (!$this->sandboxEnabled) {
+            return null;
+        }
+
+        $extension = $this->extension($file);
+        if (in_array($extension, $this->sandboxExtensions, true)) {
+            return sprintf('File extension "%s" requires sandbox review.', $extension);
+        }
+
+        $realMime = $this->detectRealMime($file);
+        if ($realMime !== false && in_array($realMime, $this->sandboxMime, true)) {
+            return sprintf('MIME type "%s" requires sandbox review.', $realMime);
+        }
+
+        return null;
+    }
+
+    private function extension(UploadedFile $file): string
+    {
+        return strtolower($file->getClientOriginalExtension() ?: $file->guessExtension() ?? '');
     }
 }

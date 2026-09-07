@@ -18,6 +18,9 @@ services:
             $maxSizes: '%neox_media.upload.max_sizes%'
             $allowedMime: '%neox_media.upload.allowed_mime%'
             $allowedExtensions: '%neox_media.upload.allowed_extensions%'
+            $sandboxEnabled: '%neox_media.upload.sandbox.enabled%'
+            $sandboxMime: '%neox_media.upload.sandbox.mime%'
+            $sandboxExtensions: '%neox_media.upload.sandbox.extensions%'
 
     Neox\MediaBundle\Service\UrlValidator:
         arguments:
@@ -42,3 +45,6 @@ services:
             $providers: !tagged_iterator neox_media.embed_provider
 
     Vich\UploaderBundle\Templating\Helper\UploaderHelperInterface: '@Vich\UploaderBundle\Templating\Helper\UploaderHelper'
+    Neox\MediaBundle\Routing\MediaRoutesCondition:
+        arguments:
+            $routesEnabled: '%neox_media.routes.enabled%'

@@ -5,6 +5,17 @@
         <button data-action="neox-media-library#filterType" data-type="video">Vidéos</button>
         <button data-action="neox-media-library#filterType" data-type="audio">Audio</button>
         <button data-action="neox-media-library#filterType" data-type="document">Documents</button>
+        <button type="button" class="neox-media-sidebar-sandbox" data-action="neox-media-library#filterSandbox">
+            <span class="neox-media-sidebar-label">
+                <svg class="neox-media-sidebar-warning" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M12 3 2.8 20h18.4L12 3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                    <path d="M12 8v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    <circle cx="12" cy="16.5" r="1" fill="currentColor"/>
+                </svg>
+                <span>Sandbox</span>
+            </span>
+            <span class="neox-media-sidebar-badge">{{ sandbox_count|default(0) }}</span>
+        </button>
     </nav>
 
     <hr>

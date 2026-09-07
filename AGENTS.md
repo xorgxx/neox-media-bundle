@@ -25,7 +25,7 @@ Le bundle doit rester réutilisable et ne jamais dépendre directement d'une ent
 Lire dans cet ordre :
 
 1. `Docs/en/AI/RULES.md`
-2. `Docs/en/AI/ARCHITECTURE.md`
+2. `Docs/AI/ARCHITECTURE.md`
 3. `Docs/en/AI/WORKFLOW.md`
 4. `Docs/README.md`
 5. les fichiers spécifiques au domaine modifié

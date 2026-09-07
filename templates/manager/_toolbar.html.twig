@@ -1,4 +1,17 @@
 <header class="neox-media-toolbar">
+    {% if standalone|default(false) %}
+        <button
+            type="button"
+            class="neox-media-toolbar-back"
+            data-action="neox-media-library#goBack"
+            {% if return_url|default(null) %}data-return-url="{{ return_url }}"{% endif %}
+            aria-label="Retourner à la page précédente"
+        >
+            <span aria-hidden="true">←</span>
+            <span>Retour</span>
+        </button>
+    {% endif %}
+
     <div>
         <h1>Médiathèque</h1>
         <small>Images, vidéos, audio et documents</small>

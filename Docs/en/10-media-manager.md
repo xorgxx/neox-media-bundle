@@ -6,6 +6,8 @@ Main route:
 /admin/media
 ```
 
+The standalone Media Manager accepts an optional local  `return_url` query parameter, for example /admin/media?return_url=/admin/products. When provided, the top-left Back button uses that URL; otherwise it falls back to browser history.
+
 The Media Manager provides:
 
 - responsive grid;

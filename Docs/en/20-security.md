@@ -26,4 +26,10 @@ security:
 
 HTML `accept` restrictions improve UX but never constitute a security validation.
 
+## Sandbox for risky files
+
+When the upload sandbox is enabled, files considered suspicious can be stored without being served publicly. This is the default behavior for formats such as SVG, PDF, and ZIP, which may contain active content or require human review.
+
+The sandbox state is stored in `Media::metadata` (`sandboxed`, `risk_level`, `risk_reason`). It does not add Doctrine columns to `neox_media`, so already registered media remain visible without a schema migration.
+
 [← NeoxCrud](19-neox-crud.md) · [Extension →](21-extension.md)

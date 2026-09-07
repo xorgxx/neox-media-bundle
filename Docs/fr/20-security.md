@@ -26,4 +26,10 @@ security:
 
 Les restrictions `accept` HTML améliorent l'UX mais ne constituent jamais une validation de sécurité.
 
+## Sandbox des fichiers à risque
+
+Quand le sandbox d'upload est activé, les fichiers considérés comme douteux peuvent être enregistrés sans être servis publiquement. C'est le comportement par défaut pour les formats comme SVG, PDF et ZIP, qui peuvent contenir du contenu actif ou nécessiter une vérification humaine.
+
+L'état sandbox est stocké dans `Media::metadata` (`sandboxed`, `risk_level`, `risk_reason`). Il n'ajoute pas de colonne Doctrine à `neox_media`, afin que les médias déjà enregistrés restent affichables sans migration de schéma.
+
 [← NeoxCrud](19-neox-crud.md) · [Extension →](21-extension.md)

@@ -5,6 +5,7 @@ namespace Neox\MediaBundle\Entity;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Neox\MediaBundle\Enum\MediaRiskLevel;
 use Neox\MediaBundle\Enum\MediaSource;
 use Neox\MediaBundle\Enum\MediaStatus;
 use Neox\MediaBundle\Enum\MediaType;
@@ -137,6 +138,67 @@ class Media
     public function setSource(MediaSource $v): self { $this->source = $v; return $this; }
     public function getStatus(): MediaStatus { return $this->status; }
     public function setStatus(MediaStatus $v): self { $this->status = $v; return $this; }
+    public function getRiskLevel(): MediaRiskLevel
+    {
+        $value = $this->metadata['risk_level'] ?? MediaRiskLevel::SAFE->value;
+
+        return is_string($value) && $value !== ''
+            ? (MediaRiskLevel::tryFrom($value) ?? MediaRiskLevel::SAFE)
+            : MediaRiskLevel::SAFE;
+    }
+
+    public function setRiskLevel(MediaRiskLevel $v): self
+    {
+        $this->metadata['risk_level'] = $v->value;
+
+        return $this;
+    }
+
+    public function getRiskReason(): ?string
+    {
+        $value = $this->metadata['risk_reason'] ?? null;
+
+        return is_string($value) && $value !== '' ? $value : null;
+    }
+
+    public function setRiskReason(?string $v): self
+    {
+        if ($v === null || $v === '') {
+            unset($this->metadata['risk_reason']);
+
+            return $this;
+        }
+
+        $this->metadata['risk_reason'] = $v;
+
+        return $this;
+    }
+
+    public function isSandboxed(): bool
+    {
+        return ($this->metadata['sandboxed'] ?? false) === true;
+    }
+
+    public function setSandboxed(bool $v): self
+    {
+        if (!$v) {
+            unset($this->metadata['sandboxed']);
+
+            return $this;
+        }
+
+        $this->metadata['sandboxed'] = true;
+
+        return $this;
+    }
+
+    public function approveSandbox(): self
+    {
+        unset($this->metadata['sandboxed'], $this->metadata['risk_reason']);
+        $this->metadata['risk_level'] = MediaRiskLevel::SAFE->value;
+
+        return $this;
+    }
     public function getUrl(): ?string { return $this->url; }
     public function setUrl(?string $v): self { $this->url = $v; return $this; }
     public function getEmbedUrl(): ?string { return $this->embedUrl; }

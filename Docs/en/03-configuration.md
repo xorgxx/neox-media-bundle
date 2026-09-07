@@ -38,6 +38,21 @@ liip_imagine:
                     mode: inset
 ```
 
+## Upload Sandbox
+
+The upload sandbox marks allowed-but-risky files as not publicly publishable until review.
+
+```yaml
+neox_media:
+    upload:
+        sandbox:
+            enabled: true
+            mime: ['image/svg+xml', 'application/pdf', 'application/zip']
+            extensions: ['svg', 'pdf', 'zip']
+```
+
+When disabled, allowed SVG/PDF/ZIP files follow the normal upload flow immediately.
+
 ## Messenger
 
 The bundle uses Messenger and does not impose RabbitMQ.

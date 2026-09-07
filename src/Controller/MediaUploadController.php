@@ -70,6 +70,11 @@ final class MediaUploadController extends AbstractController
             $media->setFile($file);
             $media->setTitle(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
             $media->setType($this->validator->detectMediaType($file));
+            if ($validation->isSandboxed()) {
+                $media->setRiskLevel($validation->riskLevel);
+                $media->setRiskReason($validation->message);
+                $media->setSandboxed(true);
+            }
 
             $em->persist($media);
             $created[] = $media;
@@ -91,7 +96,13 @@ final class MediaUploadController extends AbstractController
 
         $response = [
             'items' => array_map(
-                static fn (Media $m) => ['id' => $m->getId(), 'uuid' => $m->getUuid()],
+                static fn (Media $m) => [
+                    'id' => $m->getId(),
+                    'uuid' => $m->getUuid(),
+                    'sandboxed' => $m->isSandboxed(),
+                    'riskLevel' => $m->getRiskLevel()->value,
+                    'riskReason' => $m->getRiskReason(),
+                ],
                 $created
             ),
         ];

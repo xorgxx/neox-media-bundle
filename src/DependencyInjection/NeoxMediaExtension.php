@@ -20,6 +20,9 @@ final class NeoxMediaExtension extends Extension implements PrependExtensionInte
         $container->setParameter('neox_media.upload.max_sizes', $config['upload']['max_sizes']);
         $container->setParameter('neox_media.upload.allowed_mime', $config['upload']['allowed_mime']);
         $container->setParameter('neox_media.upload.allowed_extensions', $config['upload']['allowed_extensions']);
+        $container->setParameter('neox_media.upload.sandbox.enabled', $config['upload']['sandbox']['enabled']);
+        $container->setParameter('neox_media.upload.sandbox.mime', $config['upload']['sandbox']['mime']);
+        $container->setParameter('neox_media.upload.sandbox.extensions', $config['upload']['sandbox']['extensions']);
         $container->setParameter('neox_media.url.allowed_schemes', $config['url']['allowed_schemes']);
         $container->setParameter('neox_media.embed.allowed_providers', $config['embed']['allowed_providers']);
         $container->setParameter('neox_media.storage.adapter', $config['storage']['adapter']);

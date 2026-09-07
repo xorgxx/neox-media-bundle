@@ -4,3 +4,4 @@ neox_media_controllers:
         namespace: Neox\MediaBundle\Controller
     type: attribute
     prefix: '%neox_media.routes.prefix%'
+    condition: "service('neox_media').routesEnabled()"
