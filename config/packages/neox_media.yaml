@@ -121,6 +121,66 @@ neox_media:
     #       adapter: null
 
     # -----------------------------------------------------------------------
+    # Physical directories per context (opt-in — disabled = flat layout)
+    # -----------------------------------------------------------------------
+    # Store uploads in subdirectories of the upload destination — e.g. one
+    # directory per company: uploads/media/acme-corp/xyz.jpg
+    # The provider is YOUR service implementing:
+    #   Neox\MediaBundle\Storage\MediaDirectoryProviderInterface
+    # See examples/CompanyDirectoryProvider.php and examples/UserDirectoryProvider.php.
+    # storage:
+    #     directory:
+    #         enabled: true
+    #         provider: App\Media\CompanyDirectoryProvider
+    # Then wire the bundled Vich directory namer in vich_uploader.yaml:
+    #   vich_uploader:
+    #       mappings:
+    #           neox_media:
+    #               directory_namer:
+    #                   service: Neox\MediaBundle\Storage\SubjectDirectoryNamer
+
+    # -----------------------------------------------------------------------
+    # Multi-user ownership & sharing (opt-in — disabled = global media)
+    # -----------------------------------------------------------------------
+    # ownership:
+    #     enabled: true
+    #     default_visibility: private       # private|shared|public
+    #     admin_bypass_role: 'ROLE_ADMIN'   # '' disables the bypass
+    #     provider: ~                       # your MediaOwnerProviderInterface
+    #                                       # service id — default: bundled
+    #                                       # SecurityMediaOwnerProvider
+    #                                       # (keys: user:<id>, role:<ROLE>)
+
+    # -----------------------------------------------------------------------
+    # Folders: collection tree + dynamic smart folders (opt-in)
+    # -----------------------------------------------------------------------
+    # folders:
+    #     enabled: true
+    #     max_depth: 5
+    #     rules:
+    #         allowed_fields:
+    #             - type
+    #             - source
+    #             - mime_prefix
+    #             - owner
+    #             - storage_dir
+    #             - filename_prefix
+    #             - title_contains
+    #             - created_after
+    #             - created_before
+    #             - size_min
+    #             - size_max
+    #             - metadata
+
+    # -----------------------------------------------------------------------
+    # Media Manager access gate
+    # -----------------------------------------------------------------------
+    # Role required to open the Media Manager (checked per action).
+    # 'PUBLIC_ACCESS' disables the gate.
+    # security:
+    #     access_role: 'ROLE_ADMIN'
+
+    # -----------------------------------------------------------------------
     # Routes
     # -----------------------------------------------------------------------
     # The bundle loads its routes (Media Manager, upload, API) by default.

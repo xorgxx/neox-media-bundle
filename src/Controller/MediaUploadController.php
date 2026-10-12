@@ -6,8 +6,11 @@ namespace Neox\MediaBundle\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Neox\MediaBundle\Entity\Media;
+use Neox\MediaBundle\Enum\MediaVisibility;
 use Neox\MediaBundle\Message\ProcessMediaMessage;
+use Neox\MediaBundle\Ownership\MediaOwnerProviderInterface;
 use Neox\MediaBundle\Service\UploadValidator;
+use Neox\MediaBundle\Storage\MediaDirectoryProviderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,14 +19,16 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[IsGranted('ROLE_ADMIN')]
 final class MediaUploadController extends AbstractController
 {
     public function __construct(
         private readonly CsrfTokenManagerInterface $csrf,
         private readonly UploadValidator $validator,
+        private readonly MediaOwnerProviderInterface $ownerProvider,
+        private readonly ?MediaDirectoryProviderInterface $directoryProvider = null,
+        private readonly string $accessRole = 'ROLE_ADMIN',
+        private readonly string $defaultVisibility = 'private',
     ) {
     }
 
@@ -33,6 +38,8 @@ final class MediaUploadController extends AbstractController
         EntityManagerInterface $em,
         MessageBusInterface $bus,
     ): JsonResponse {
+        $this->denyAccessUnlessGranted($this->accessRole);
+
         if (!$this->csrf->isTokenValid(new CsrfToken('neox_media', $request->headers->get('X-CSRF-Token')))) {
             return $this->json(['error' => 'Invalid CSRF token'], 403);
         }
@@ -70,6 +77,24 @@ final class MediaUploadController extends AbstractController
             $media->setFile($file);
             $media->setTitle(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
             $media->setType($this->validator->detectMediaType($file));
+
+            // Ownership: null owner key = global media (legacy mode).
+            $ownerKey = $this->ownerProvider->getCurrentOwnerKey();
+            if ($ownerKey !== null) {
+                $media->setOwner($ownerKey);
+                $media->setVisibility(
+                    MediaVisibility::tryFrom($this->defaultVisibility) ?? MediaVisibility::PRIVATE
+                );
+            }
+
+            // Physical subdirectory decided by the host app (e.g. per-company).
+            if ($this->directoryProvider !== null) {
+                $dirKey = $this->directoryProvider->getDirectoryKey();
+                if ($dirKey !== null && $dirKey !== '') {
+                    $media->setStorageDir($dirKey);
+                }
+            }
+
             if ($validation->isSandboxed()) {
                 $media->setRiskLevel($validation->riskLevel);
                 $media->setRiskReason($validation->message);

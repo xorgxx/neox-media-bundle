@@ -59,4 +59,24 @@ The bundle uses Messenger and does not impose RabbitMQ.
 
 The host project chooses its transport.
 
+## Multi-user options (opt-in)
+
+All disabled by default — legacy global behaviour is preserved.
+
+```yaml
+neox_media:
+    ownership:
+        enabled: true                    # owner/visibility/shares — see docs 27
+    folders:
+        enabled: true                    # collection tree + smart folders — see docs 28
+    storage:
+        directory:
+            enabled: true                # physical subdirs — see docs 29
+            provider: App\Media\CompanyDirectoryProvider
+    security:
+        access_role: 'ROLE_ADMIN'        # Media Manager gate ('PUBLIC_ACCESS' to disable)
+```
+
+Details: [27. Ownership](27-ownership.md) · [28. Folders](28-folders.md) · [29. Physical directories](29-storage-dir.md)
+
 [← Installation](02-installation.md) · [Architecture →](04-architecture.md)

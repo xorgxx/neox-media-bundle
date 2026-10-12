@@ -30,6 +30,9 @@ Documentation multipage de **NeoxMediaBundle**, compatible Symfony 7 et Symfony 
 24. [Dépannage](24-troubleshooting.md)
 25. [Stockage distant (REMOTE)](25-storage.md)
 26. [Providers Embed](26-embed-providers.md)
+27. [Propriété, visibilité et partages](27-ownership.md)
+28. [Dossiers — arbre et dossiers dynamiques](28-folders.md)
+29. [Répertoires physiques par contexte](29-storage-dir.md)
 
 
 ## Documentation pour assistants IA

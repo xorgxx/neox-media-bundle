@@ -29,4 +29,19 @@ final class MediaCollectionRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * Root collections (no parent) ordered by name — top level of the
+     * folder tree.
+     *
+     * @return MediaCollection[]
+     */
+    public function findRoots(): array
+    {
+        return $this->createQueryBuilder('c')
+            ->where('c.parent IS NULL')
+            ->orderBy('c.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

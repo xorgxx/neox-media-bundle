@@ -30,6 +30,9 @@ Multipage documentation for **NeoxMediaBundle**, compatible with Symfony 7 and S
 24. [Troubleshooting](24-troubleshooting.md)
 25. [Remote Storage (REMOTE)](25-storage.md)
 26. [Embed Providers](26-embed-providers.md)
+27. [Ownership, Visibility and Shares](27-ownership.md)
+28. [Folders — Tree and Smart Folders](28-folders.md)
+29. [Physical Directories per Context](29-storage-dir.md)
 
 
 ## Documentation for AI Assistants

@@ -51,12 +51,14 @@
 Contains the generic persistent objects:
 
 ```text
-Media
-MediaCollection
+Media                (+ owner, visibility, storageDir — opt-in)
+MediaCollection      (+ parent, owner, visibility, dynamic, rules — opt-in)
 MediaCollectionItem
+MediaShare           (ACL entry: target + subject keys — opt-in)
 ```
 
-No business entities.
+No business entities. `owner` / subject keys are opaque strings, never
+references to host entities.
 
 ---
 
@@ -66,6 +68,8 @@ No business entities.
 MediaType
 MediaSource
 MediaStatus
+MediaRiskLevel
+MediaVisibility    (private | shared | public)
 ```
 
 ---
@@ -177,6 +181,48 @@ Optional connection to CRUD systems.
 
 ---
 
+## Ownership (opt-in, neox_media.ownership)
+
+```text
+Ownership/MediaOwnerProviderInterface   — opaque owner + subject keys
+Ownership/SecurityMediaOwnerProvider    — default: user:<identifier> + role:<ROLE>
+Ownership/NullMediaOwnerProvider        — global mode (ownership disabled)
+Security/MediaVoter                     — MEDIA_VIEW/EDIT/DELETE/SHARE on Media + MediaCollection
+Entity/MediaShare + Repository          — ACL entries (user|role|team|everyone keys)
+```
+
+Multi-user isolation and sharing. All identity is expressed as opaque
+strings — the bundle never imports a host User entity.
+
+---
+
+## Folder (opt-in, neox_media.folders)
+
+```text
+Folder/FolderRuleEvaluator   — MediaCollection::rules JSON → DQL criteria
+```
+
+Collection tree (`parent`) and dynamic smart folders (`dynamic` + `rules`).
+Rule fields are whitelisted via `folders.rules.allowed_fields`. Dynamic
+folders filter only — they never elevate access.
+
+---
+
+## Storage (opt-in, neox_media.storage.directory)
+
+```text
+Storage/StorageInterface               — REMOTE url resolution (existing)
+Storage/FilesystemStorageAdapter       — local/CDN fallback (existing)
+Storage/MediaDirectoryProviderInterface — app-supplied physical dir key
+Storage/SubjectDirectoryNamer          — Vich directory namer reading
+                                         Media::storageDir (+ sanitize)
+```
+
+Physical per-context subdirectories (e.g. one dir per company). The key is
+persisted on `Media::storageDir` at upload so URL generation is context-free.
+
+---
+
 # Flow — File Upload
 
 ```text
@@ -273,9 +319,13 @@ Stimulus
 Twig
 ```
 
-## Optional
+## Optional (feature flags — disabled by default)
 
 ```text
+ownership.*            — MediaVoter, MediaShare, owner keys
+folders.*              — collection tree + dynamic rules
+storage.directory.*    — physical per-context subdirectories
+security.access_role   — configurable Media Manager gate
 RabbitMQ
 Mercure
 FFmpeg

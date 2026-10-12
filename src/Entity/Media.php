@@ -9,6 +9,7 @@ use Neox\MediaBundle\Enum\MediaRiskLevel;
 use Neox\MediaBundle\Enum\MediaSource;
 use Neox\MediaBundle\Enum\MediaStatus;
 use Neox\MediaBundle\Enum\MediaType;
+use Neox\MediaBundle\Enum\MediaVisibility;
 use Symfony\Component\HttpFoundation\File\File;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
@@ -66,6 +67,27 @@ class Media
 
     #[ORM\Column(length: 1024, nullable: true)]
     private ?string $storageKey = null;
+
+    /**
+     * Physical subdirectory under the upload destination (e.g. "acme-corp").
+     * Set once at upload time by MediaDirectoryProviderInterface.
+     * null = stored at the root (flat layout).
+     */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $storageDir = null;
+
+    /**
+     * Opaque owner key (e.g. "user:42", "company:acme"). Only meaningful
+     * when neox_media.ownership.enabled is true. null = global media.
+     */
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $owner = null;
+
+    /**
+     * Visibility level used by MediaVoter when ownership is enabled.
+     */
+    #[ORM\Column(enumType: MediaVisibility::class, options: ['default' => 'private'])]
+    private MediaVisibility $visibility = MediaVisibility::PRIVATE;
 
     #[ORM\Column(nullable: true)]
     private ?int $width = null;
@@ -207,6 +229,12 @@ class Media
     public function setProvider(?string $v): self { $this->provider = $v; return $this; }
     public function getStorageKey(): ?string { return $this->storageKey; }
     public function setStorageKey(?string $v): self { $this->storageKey = $v; return $this; }
+    public function getStorageDir(): ?string { return $this->storageDir; }
+    public function setStorageDir(?string $v): self { $this->storageDir = $v; return $this; }
+    public function getOwner(): ?string { return $this->owner; }
+    public function setOwner(?string $v): self { $this->owner = $v; return $this; }
+    public function getVisibility(): MediaVisibility { return $this->visibility; }
+    public function setVisibility(MediaVisibility $v): self { $this->visibility = $v; return $this; }
     public function getWidth(): ?int { return $this->width; }
     public function setWidth(?int $v): self { $this->width = $v; return $this; }
     public function getHeight(): ?int { return $this->height; }

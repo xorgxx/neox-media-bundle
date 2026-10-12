@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
 services:
     _defaults:
         autowire: true
@@ -43,6 +44,38 @@ services:
     Neox\MediaBundle\Embed\EmbedProviderRegistry:
         arguments:
             $providers: !tagged_iterator neox_media.embed_provider
+
+    # --- Ownership / sharing -------------------------------------------------
+    # MediaOwnerProviderInterface alias is set by NeoxMediaExtension:
+    # config provider > SecurityMediaOwnerProvider > NullMediaOwnerProvider.
+    Neox\MediaBundle\Security\MediaVoter:
+        arguments:
+            $ownershipEnabled: '%neox_media.ownership.enabled%'
+            $adminBypassRole: '%neox_media.ownership.admin_bypass_role%'
+            $ownerProvider: '@Neox\MediaBundle\Ownership\MediaOwnerProviderInterface'
+
+    # --- Smart folders -------------------------------------------------------
+    Neox\MediaBundle\Folder\FolderRuleEvaluator:
+        arguments:
+            $allowedFields: '%neox_media.folders.rules.allowed_fields%'
+
+    Neox\MediaBundle\Repository\MediaRepository:
+        arguments:
+            $ruleEvaluator: '@Neox\MediaBundle\Folder\FolderRuleEvaluator'
+
+    # --- Controllers ----------------------------------------------------------
+    Neox\MediaBundle\Controller\MediaUploadController:
+        arguments:
+            $ownerProvider: '@Neox\MediaBundle\Ownership\MediaOwnerProviderInterface'
+            $accessRole: '%neox_media.security.access_role%'
+            $defaultVisibility: '%neox_media.ownership.default_visibility%'
+
+    Neox\MediaBundle\Controller\MediaManagerController:
+        arguments:
+            $ownerProvider: '@Neox\MediaBundle\Ownership\MediaOwnerProviderInterface'
+            $accessRole: '%neox_media.security.access_role%'
+            $ownershipEnabled: '%neox_media.ownership.enabled%'
+            $foldersMaxDepth: '%neox_media.folders.max_depth%'
 
     Vich\UploaderBundle\Templating\Helper\UploaderHelperInterface: '@Vich\UploaderBundle\Templating\Helper\UploaderHelper'
     Neox\MediaBundle\Routing\MediaRoutesCondition:
