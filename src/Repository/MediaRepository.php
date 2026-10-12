@@ -66,7 +66,8 @@ final class MediaRepository extends ServiceEntityRepository
         }
 
         $qb = $this->createLibraryQueryBuilder($query, $type, 'updatedAt', $collectionId)
-            ->select('COUNT(m.id)');
+            ->select('COUNT(m.id)')
+            ->resetDQLPart('orderBy');
 
         return (int) $qb->getQuery()
             ->useQueryCache(true)
