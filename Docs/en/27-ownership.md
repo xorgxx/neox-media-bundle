@@ -75,23 +75,27 @@ getCurrentSubjectKeys()  // ['user:john@example.com', 'role:ROLE_USER', 'role:RO
 
 ```php
 // src/Media/AppOwnerProvider.php
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+
 final class AppOwnerProvider implements MediaOwnerProviderInterface
 {
-    public function __construct(private Security $security) {}
+    public function __construct(private TokenStorageInterface $tokenStorage) {}
 
     public function getCurrentOwnerKey(): ?string
     {
-        $user = $this->security->getUser();
-        return $user ? 'user:'.$user->getUserIdentifier() : null;
+        $user = $this->tokenStorage->getToken()?->getUser();
+        return $user instanceof UserInterface ? 'user:'.$user->getUserIdentifier() : null;
     }
 
     public function getCurrentSubjectKeys(): array
     {
-        $user = $this->security->getUser();
-        if (!$user) return [];
+        $token = $this->tokenStorage->getToken();
+        $user = $token?->getUser();
+        if (!$user instanceof UserInterface) return [];
 
         $keys = ['user:'.$user->getUserIdentifier()];
-        foreach ($user->getRoles() as $role) {
+        foreach ($token->getRoleNames() as $role) { // SF7+SF8-safe (getRoles() removed in SF8)
             $keys[] = 'role:'.$role;
         }
         if (method_exists($user, 'getTeam')) {

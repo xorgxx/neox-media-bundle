@@ -13,7 +13,7 @@
     "symfony/security-bundle": "^7.0 || ^8.0",
     "doctrine/orm": "^3.0",
     "doctrine/doctrine-bundle": "^2.12 || ^3.0",
-    "vich/uploader-bundle": "^2.9",
+    "vich/uploader-bundle": "^2.9 || ^3.0",
     "liip/imagine-bundle": "^2.16",
     "symfony/yaml": "^7.0 || ^8.0",
     "symfony/expression-language": "^7.0 || ^8.0"

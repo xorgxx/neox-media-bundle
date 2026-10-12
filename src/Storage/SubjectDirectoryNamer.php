@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Neox\MediaBundle\Storage;
 
 use Neox\MediaBundle\Entity\Media;
+use Vich\UploaderBundle\Mapping\PropertyMapping;
 use Vich\UploaderBundle\Naming\DirectoryNamerInterface;
 
 /**
@@ -25,13 +26,10 @@ use Vich\UploaderBundle\Naming\DirectoryNamerInterface;
  */
 final class SubjectDirectoryNamer implements DirectoryNamerInterface
 {
-    /**
-     * @param object|array $mapping The entity (Media) being uploaded
-     */
-    public function directoryName(object|array $mapping): string
+    public function directoryName(object|array $object, PropertyMapping $mapping): string
     {
-        if ($mapping instanceof Media) {
-            return self::sanitize((string) ($mapping->getStorageDir() ?? ''));
+        if ($object instanceof Media) {
+            return self::sanitize((string) ($object->getStorageDir() ?? ''));
         }
 
         return '';
@@ -48,6 +46,7 @@ final class SubjectDirectoryNamer implements DirectoryNamerInterface
         $key = trim($key);
         $key = str_replace(["\0", '/', '\\', '..'], '-', $key);
         $key = (string) preg_replace('/[^a-zA-Z0-9_-]/', '-', $key);
+        $key = (string) preg_replace('/-{2,}/', '-', $key);
         $key = trim($key, '-.');
 
         // Never produce a hidden dir or an empty segment from hostile input.

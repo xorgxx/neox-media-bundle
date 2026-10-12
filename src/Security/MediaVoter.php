@@ -12,6 +12,7 @@ use Neox\MediaBundle\Ownership\MediaOwnerProviderInterface;
 use Neox\MediaBundle\Repository\MediaShareRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 /**
@@ -58,8 +59,12 @@ final class MediaVoter extends Voter
         return $subject instanceof Media || $subject instanceof MediaCollection;
     }
 
-    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
-    {
+    protected function voteOnAttribute(
+        string $attribute,
+        mixed $subject,
+        TokenInterface $token,
+        ?Vote $vote = null,
+    ): bool {
         // Legacy global mode: everything allowed to whoever reaches the voter.
         if (!$this->ownershipEnabled) {
             return true;

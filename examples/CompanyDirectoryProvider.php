@@ -6,7 +6,6 @@ namespace App\Media;
 
 use Neox\MediaBundle\Storage\MediaDirectoryProviderInterface;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
  * Example 1 — one physical directory per company.
@@ -36,7 +35,6 @@ final class CompanyDirectoryProvider implements MediaDirectoryProviderInterface
 {
     public function __construct(
         private readonly Security $security,
-        private readonly SluggerInterface $slugger,
     ) {
     }
 
