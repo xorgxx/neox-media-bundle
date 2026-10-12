@@ -24,8 +24,12 @@ use Vich\UploaderBundle\Naming\DirectoryNamerInterface;
  *                 directory_namer:
  *                     service: Neox\MediaBundle\Storage\SubjectDirectoryNamer
  */
+/**
+ * @implements DirectoryNamerInterface<object>
+ */
 final class SubjectDirectoryNamer implements DirectoryNamerInterface
 {
+    /** @param object|array<array-key, mixed> $object */
     public function directoryName(object|array $object, PropertyMapping $mapping): string
     {
         if ($object instanceof Media) {

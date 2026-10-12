@@ -51,6 +51,8 @@ class MediaShareRepository extends ServiceEntityRepository
 
     /**
      * Whether any share grants access to the target for the given subject keys.
+     *
+     * @param array<int, string> $subjectKeys
      */
     public function grantsAccess(string $targetType, int $targetId, array $subjectKeys, bool $needEdit = false): bool
     {

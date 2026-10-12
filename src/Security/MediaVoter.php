@@ -33,6 +33,8 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  *
  * The host app can replace this voter (its own voter runs first when
  * registered with a higher priority or when it votes on the same subject).
+ *
+ * @extends Voter<string, Media|MediaCollection>
  */
 final class MediaVoter extends Voter
 {
@@ -79,21 +81,20 @@ final class MediaVoter extends Voter
             return true;
         }
 
-        [$ownerKey, $visibility, $targetType, $targetId] = match (true) {
-            $subject instanceof Media => [
+        // supports() guarantees $subject is Media|MediaCollection.
+        [$ownerKey, $visibility, $targetType, $targetId] = $subject instanceof Media
+            ? [
                 $subject->getOwner(),
                 $subject->getVisibility(),
                 MediaShare::TARGET_MEDIA,
                 $subject->getId(),
-            ],
-            $subject instanceof MediaCollection => [
+            ]
+            : [
                 $subject->getOwner(),
                 $subject->getVisibility(),
                 MediaShare::TARGET_COLLECTION,
                 $subject->getId(),
-            ],
-            default => [null, null, null, null],
-        };
+            ];
 
         // Owner has full rights.
         $currentOwner = $this->ownerProvider->getCurrentOwnerKey();
@@ -112,7 +113,7 @@ final class MediaVoter extends Voter
         }
 
         // Shared/public visibility grants view.
-        if ($attribute === self::VIEW && $visibility !== null && $visibility !== MediaVisibility::PRIVATE) {
+        if ($attribute === self::VIEW && $visibility !== MediaVisibility::PRIVATE) {
             return $this->security->getUser() !== null || $visibility === MediaVisibility::PUBLIC;
         }
 

@@ -89,10 +89,7 @@ final class NeoxMediaExtension extends Extension implements PrependExtensionInte
 
         $provider = $directoryConfig['provider'] ?? null;
         if ($provider === null) {
-            throw new InvalidArgumentException(
-                'neox_media.storage.directory.provider is required when storage.directory.enabled is true '
-                .'(a service implementing '.MediaDirectoryProviderInterface::class.').'
-            );
+            throw new InvalidArgumentException('neox_media.storage.directory.provider is required when storage.directory.enabled is true (a service implementing '.MediaDirectoryProviderInterface::class.').');
         }
 
         $container->setAlias(MediaDirectoryProviderInterface::class, $provider);
