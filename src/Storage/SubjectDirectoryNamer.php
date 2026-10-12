@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Neox\MediaBundle\Storage;
 
 use Neox\MediaBundle\Entity\Media;
-use Vich\UploaderBundle\Mapping\PropertyMapping;
 use Vich\UploaderBundle\Naming\DirectoryNamerInterface;
 
 /**
@@ -29,8 +28,13 @@ use Vich\UploaderBundle\Naming\DirectoryNamerInterface;
  */
 final class SubjectDirectoryNamer implements DirectoryNamerInterface
 {
-    /** @param object|array<array-key, mixed> $object */
-    public function directoryName(object|array $object, PropertyMapping $mapping): string
+    /**
+     * @param object|array<array-key, mixed> $object
+     * @param mixed                          $mapping vich\UploaderBundle\Mapping\PropertyMapping (v2)
+     *                                                or PropertyMappingInterface (v3) — untyped for
+     *                                                contravariance across both major versions
+     */
+    public function directoryName(object|array $object, $mapping): string
     {
         if ($object instanceof Media) {
             return self::sanitize((string) ($object->getStorageDir() ?? ''));

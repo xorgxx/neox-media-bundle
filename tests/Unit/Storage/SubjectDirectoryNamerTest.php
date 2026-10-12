@@ -7,7 +7,6 @@ namespace Neox\MediaBundle\Tests\Unit\Storage;
 use Neox\MediaBundle\Entity\Media;
 use Neox\MediaBundle\Storage\SubjectDirectoryNamer;
 use PHPUnit\Framework\TestCase;
-use Vich\UploaderBundle\Mapping\PropertyMapping;
 
 final class SubjectDirectoryNamerTest extends TestCase
 {
@@ -48,9 +47,10 @@ final class SubjectDirectoryNamerTest extends TestCase
         yield 'mixed hostile' => ['../a..b/', 'a-b'];
     }
 
-    private function mapping(): PropertyMapping
+    private function mapping(): object
     {
-        // PropertyMapping is final — instantiate it (paths are irrelevant here).
-        return new PropertyMapping('file', 'filename');
+        // vich v2 uses PropertyMapping, v3 PropertyMappingInterface — the namer
+        // accepts mixed, so a bare object keeps the test version-agnostic.
+        return new \stdClass();
     }
 }

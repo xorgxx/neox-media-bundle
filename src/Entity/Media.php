@@ -11,7 +11,7 @@ use Neox\MediaBundle\Enum\MediaStatus;
 use Neox\MediaBundle\Enum\MediaType;
 use Neox\MediaBundle\Enum\MediaVisibility;
 use Symfony\Component\HttpFoundation\File\File;
-use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Vich\UploaderBundle\Mapping\Attribute as Vich;
 
 #[ORM\Entity(repositoryClass: \Neox\MediaBundle\Repository\MediaRepository::class)]
 #[ORM\Table(name: 'neox_media')]
