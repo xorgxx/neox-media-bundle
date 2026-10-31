@@ -93,7 +93,9 @@ final class MediaUploadController extends AbstractController
                 continue;
             }
             // The UI may select a home descendant; the host provider remains the fallback.
-            if (is_string($requestedDir) && $requestedDir !== '') {
+            // The validation above guarantees a non-empty home-relative string
+            // whenever this value is not null.
+            if ($requestedDir !== null) {
                 $media->setStorageDir($requestedDir);
             } elseif ($this->directoryProvider !== null) {
                 $dirKey = $this->directoryProvider->getDirectoryKey();
