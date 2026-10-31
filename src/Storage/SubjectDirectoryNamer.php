@@ -44,20 +44,26 @@ final class SubjectDirectoryNamer implements DirectoryNamerInterface
     }
 
     /**
-     * Reduce an arbitrary key to a safe single path segment.
+     * Reduce an arbitrary key to safe path segments.
      *
-     * Blocks path traversal (".."), separators and control chars, and keeps
-     * only [a-zA-Z0-9-_], everything else becomes '-'.
+     * Blocks traversal and control chars while preserving a controlled
+     * hierarchy such as `home/video`.
      */
     public static function sanitize(string $key): string
     {
         $key = trim($key);
-        $key = str_replace(["\0", '/', '\\', '..'], '-', $key);
-        $key = (string) preg_replace('/[^a-zA-Z0-9_-]/', '-', $key);
-        $key = (string) preg_replace('/-{2,}/', '-', $key);
-        $key = trim($key, '-.');
+        $segments = explode('/', str_replace('\\', '/', $key));
+        $safe = [];
+        foreach ($segments as $segment) {
+            $segment = str_replace(["\0", '..'], '-', $segment);
+            $segment = (string) preg_replace('/[^a-zA-Z0-9_-]/', '-', $segment);
+            $segment = (string) preg_replace('/-{2,}/', '-', $segment);
+            $segment = trim($segment, '-.');
+            if ($segment !== '') {
+                $safe[] = $segment;
+            }
+        }
 
-        // Never produce a hidden dir or an empty segment from hostile input.
-        return $key;
+        return implode('/', $safe);
     }
 }

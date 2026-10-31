@@ -20,6 +20,16 @@
 
     <hr>
 
+    <div class="neox-media-directories-header"><h3>Home</h3><button type="button" data-action="neox-media-library#createDirectory">+</button></div>
+    <div class="neox-media-directories" data-neox-media-library-target="directories">
+        <ul role="tree" aria-label="Répertoires média">
+            <li role="treeitem"><button type="button" data-storage-dir="__root__" data-action="neox-media-library#filterStorageDir">Non classés</button></li>
+            <li role="treeitem"><button type="button" data-storage-dir="home" data-action="neox-media-library#filterStorageDir" class="active">Home</button></li>
+        </ul>
+    </div>
+
+    <hr>
+
     <div class="neox-media-collections-header">
         <h3>Collections</h3>
         <button type="button" class="neox-media-collections-add" data-action="neox-media-library#createCollection">+</button>

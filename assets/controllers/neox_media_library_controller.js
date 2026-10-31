@@ -6,11 +6,14 @@ export default class extends Controller {
     static targets = [
         'grid', 'empty', 'search', 'inspector', 'preview',
         'title', 'alt', 'description', 'meta', 'downloadBtn', 'loadMore', 'sortSelect', 'statusBar',
-        'overlay', 'saveBtn', 'removeBtn', 'collections', 'bulkActions', 'themeBtn'
+        'overlay', 'saveBtn', 'removeBtn', 'collections', 'directories', 'bulkActions', 'themeBtn'
     ];
 
     static values = {
         apiUrl: String,
+        directoriesUrl: String,
+        directoryCreateUrl: String,
+        syncFilesUrl: String,
         updateUrl: String,
         deleteUrl: String,
         bulkDeleteUrl: String,
@@ -35,9 +38,11 @@ export default class extends Controller {
         this.selectedIds = new Set();
         this.multiSelectMode = false;
         this.collectionId = null;
+        this.storageDir = 'home';
         this.sandboxed = false;
         this.initTheme();
         this.load();
+        this.loadDirectories();
 
         this.element.addEventListener('neox-media-upload:uploaded', () => this.load());
         this.element.addEventListener('neox-media-upload:failed', (e) => this.showUploadError(e));
@@ -138,6 +143,7 @@ export default class extends Controller {
         try {
             const body = new FormData();
             files.forEach(file => body.append('files[]', file));
+            body.append('storage_dir', this.storageDir === '__root__' ? 'home' : (this.storageDir || 'home'));
 
             const uploadResponse = await fetch(this.uploadUrlValue, {
                 method: 'POST',
@@ -189,6 +195,7 @@ export default class extends Controller {
         if (this.type) params.set('type', this.type);
         if (this.sort) params.set('sort', this.sort);
         if (this.collectionId) params.set('collection', this.collectionId);
+        if (this.storageDir) params.set('storage_dir', this.storageDir);
         if (this.sandboxed) params.set('sandboxed', '1');
         params.set('limit', this.limit);
         params.set('offset', this.offset);
@@ -216,6 +223,60 @@ export default class extends Controller {
         } finally {
             this.setGridLoading(false);
         }
+    }
+
+    async loadDirectories() {
+        if (!this.hasDirectoriesTarget || !this.hasDirectoriesUrlValue) return;
+        const response = await fetch(this.directoriesUrlValue, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        if (!response.ok) return;
+        const data = await response.json();
+        const tree = this.directoriesTarget.querySelector('ul') || this.directoriesTarget;
+        tree.innerHTML = '';
+        const add = (path, label, parent) => {
+            const li = document.createElement('li');
+            li.setAttribute('role', 'treeitem');
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.dataset.storageDir = path;
+            button.dataset.action = 'neox-media-library#filterStorageDir';
+            button.textContent = label;
+            button.style.paddingLeft = `${10 + Math.max(0, path.split('/').length - 1) * 18}px`;
+            if (path === this.storageDir) button.classList.add('active');
+            li.appendChild(button);
+            parent.appendChild(li);
+        };
+        add('__root__', 'Non classés', tree);
+        for (const path of (data.directories || [])) {
+            add(path, path === 'home' ? 'Home' : path.replace(/^home\//, ''), tree);
+        }
+    }
+
+    filterStorageDir(event) {
+        this.storageDir = event.currentTarget.dataset.storageDir || 'home';
+        this.offset = 0;
+        this.load();
+        const upload = this.element.querySelector('[data-controller~="neox-media-upload"]');
+        if (upload) upload.dataset.neoxMediaUploadStorageDirValue = this.storageDir === '__root__' ? 'home' : this.storageDir;
+        this.directoriesTarget?.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+    }
+
+    async createDirectory() {
+        const name = window.prompt('Nom du sous-dossier (ex. video) :');
+        if (!name) return;
+        const parent = this.storageDir === '__root__' || !this.storageDir ? 'home' : this.storageDir.split(',')[0];
+        const response = await fetch(this.directoryCreateUrlValue, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ name: name.trim(), parent }),
+        });
+        if (!response.ok) return;
+        await this.loadDirectories();
+    }
+
+    async syncFiles() {
+        const response = await fetch(this.syncFilesUrlValue, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        if (response.ok) this.load();
     }
 
     render(items) {
@@ -277,6 +338,9 @@ export default class extends Controller {
             }
             if (media.thumbUrl) return `<img src="${escapeHtml(media.thumbUrl)}" alt="" loading="lazy">`;
             return `<div class="neox-media-icon">🎬</div>`;
+        }
+        if (media.type === 'video' && (media.mimeType === 'application/vnd.apple.mpegurl' || /\.m3u8(?:$|\?)/i.test(media.name || ''))) {
+            return '<div class="neox-media-icon" title="Playlist HLS">🎬</div>';
         }
         const thumb = full ? (media.url || media.thumbUrl) : (media.thumbUrl || media.url);
         const url = escapeHtml(thumb || '');

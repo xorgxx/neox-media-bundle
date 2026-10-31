@@ -46,10 +46,11 @@ final class MediaRepository extends ServiceEntityRepository
         ?string $ownerKey = null,
         array $subjectKeys = [],
         string $scope = 'all',
+        ?string $storageDir = null,
     ): array {
         $limit = max(1, min($limit, 200));
         $offset = max(0, $offset);
-        $qb = $this->createLibraryQueryBuilder($query, $type, $sort, $collectionId, $ownerKey, $subjectKeys, $scope);
+        $qb = $this->createLibraryQueryBuilder($query, $type, $sort, $collectionId, $ownerKey, $subjectKeys, $scope, $storageDir);
 
         if ($sandboxed === null) {
             return $qb
@@ -79,9 +80,10 @@ final class MediaRepository extends ServiceEntityRepository
         ?string $ownerKey = null,
         array $subjectKeys = [],
         string $scope = 'all',
+        ?string $storageDir = null,
     ): int {
         if ($sandboxed !== null) {
-            $items = $this->createLibraryQueryBuilder($query, $type, 'updatedAt', $collectionId, $ownerKey, $subjectKeys, $scope)
+            $items = $this->createLibraryQueryBuilder($query, $type, 'updatedAt', $collectionId, $ownerKey, $subjectKeys, $scope, $storageDir)
                 ->getQuery()
                 ->useQueryCache(true)
                 ->getResult();
@@ -92,7 +94,7 @@ final class MediaRepository extends ServiceEntityRepository
             ));
         }
 
-        $qb = $this->createLibraryQueryBuilder($query, $type, 'updatedAt', $collectionId, $ownerKey, $subjectKeys, $scope)
+        $qb = $this->createLibraryQueryBuilder($query, $type, 'updatedAt', $collectionId, $ownerKey, $subjectKeys, $scope, $storageDir)
             ->select('COUNT(m.id)')
             ->resetDQLPart('orderBy');
 
@@ -120,6 +122,7 @@ final class MediaRepository extends ServiceEntityRepository
         ?string $ownerKey,
         array $subjectKeys,
         string $scope,
+        ?string $storageDir = null,
     ): QueryBuilder {
         $qb = $this->createQueryBuilder('m');
 
@@ -143,6 +146,21 @@ final class MediaRepository extends ServiceEntityRepository
 
         if ($collectionId !== null) {
             $this->applyCollection($qb, $collectionId);
+        }
+
+        if ($storageDir === '__root__') {
+            $qb->andWhere('m.storageDir IS NULL');
+        } elseif ($storageDir !== null) {
+            $directories = array_values(array_filter(array_map('trim', explode(',', $storageDir))));
+            $or = $qb->expr()->orX();
+            foreach ($directories as $index => $directory) {
+                $parameter = 'storageDirPrefix'.$index;
+                $or->add('m.storageDir = :'.$parameter);
+                $or->add('m.storageDir LIKE :'.$parameter.'Children');
+                $qb->setParameter($parameter, $directory);
+                $qb->setParameter($parameter.'Children', $directory.'/%');
+            }
+            $qb->andWhere($or);
         }
 
         $this->applyScope($qb, $ownerKey, $subjectKeys, $scope);

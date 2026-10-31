@@ -3,6 +3,10 @@
 Organize uploaded files into subdirectories of the upload destination — e.g.
 **one directory per company** — without any access-control system.
 
+> **Fixed root.** New media-manager directories start at `home` (`home`,
+> `home/video`, `home/video/films`). Arbitrary paths and traversal are rejected.
+> Legacy media with `storage_dir = null` remains available under “Unsorted”.
+>
 > **Opt-in.** Disabled by default: files are stored flat in
 > `uploads/media/` exactly as before.
 

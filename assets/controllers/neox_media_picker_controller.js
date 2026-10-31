@@ -117,6 +117,7 @@ const DIALOG_CSS = `
 .neox-media-dialog .neox-media-card.selected { outline: 2px solid var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
 .neox-media-dialog .neox-media-card-preview { aspect-ratio: 1; background: var(--preview-bg); display: grid; place-items: center; overflow: hidden; }
 .neox-media-dialog .neox-media-card-preview img { width: 100%; height: 100%; object-fit: cover; }
+.neox-media-dialog .neox-media-card-preview video { width: 100%; height: 100%; object-fit: cover; }
 .neox-media-dialog .neox-media-icon { font-size: 38px; opacity: .5; }
 .neox-media-dialog .neox-media-card-body { padding: 10px 12px; display: grid; gap: 3px; }
 .neox-media-dialog .neox-media-card-body strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 600; }
@@ -129,6 +130,37 @@ const DIALOG_CSS = `
 .neox-media-dialog .neox-media-spinner {
     width: 32px; height: 32px; border: 3px solid var(--border);
     border-top-color: var(--accent); border-radius: 50%; animation: neox-media-spin .65s linear infinite;
+}
+.neox-media-dialog .neox-media-picker-content {
+    display: grid !important; grid-template-columns: minmax(210px, 250px) minmax(0, 1fr) !important;
+    gap: 18px; min-height: 360px; align-items: stretch;
+}
+.neox-media-dialog .neox-media-picker-directories {
+    display: block !important; min-width: 0; max-height: 52vh; overflow: auto;
+    padding: 12px 12px 12px 0; border-right: 1px solid var(--border);
+}
+.neox-media-dialog .neox-media-picker-directories > ul,
+.neox-media-dialog .neox-media-picker-directories li > ul {
+    display: block !important; list-style: none !important; margin: 0; padding: 0;
+}
+.neox-media-dialog .neox-media-picker-directories li { display: block !important; margin: 0; padding: 0; }
+.neox-media-dialog .neox-media-picker-directories li > ul {
+    margin-left: 16px; overflow: hidden; transition: height .22s ease;
+}
+.neox-media-dialog .neox-media-tree-row { display: flex !important; align-items: center; gap: 4px; min-height: 34px; }
+.neox-media-dialog .neox-media-tree-row > label {
+    display: flex !important; align-items: center; gap: 8px; flex: 1; min-width: 0;
+    margin: 0; padding: 4px 7px; border-radius: 6px; cursor: pointer; white-space: nowrap;
+}
+.neox-media-dialog .neox-media-tree-row > label span { overflow: hidden; text-overflow: ellipsis; }
+.neox-media-dialog .neox-media-tree-row input[type="radio"] { flex: 0 0 16px; width: 16px; height: 16px; margin: 0; accent-color: var(--accent); }
+.neox-media-dialog .neox-media-tree-toggle,
+.neox-media-dialog .neox-media-tree-spacer { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 22px; width: 22px; height: 22px; }
+.neox-media-dialog .neox-media-tree-toggle { border: 0; padding: 0; background: transparent; color: var(--text-muted); cursor: pointer; }
+.neox-media-dialog .neox-media-tree-row > label:hover { background: var(--surface-hover); }
+@media (max-width: 700px) {
+    .neox-media-dialog .neox-media-picker-content { grid-template-columns: minmax(0, 1fr) !important; }
+    .neox-media-dialog .neox-media-picker-directories { max-height: 160px; border-right: 0; border-bottom: 1px solid var(--border); }
 }
 `;
 
@@ -161,6 +193,7 @@ export default class extends Controller {
         this._htmlPromise = null;
         this._gridData = null;
         this._gridPromise = null;
+        this.storageDir = 'home';
 
         loadSwal();
         ensureCss();
@@ -351,6 +384,126 @@ export default class extends Controller {
     }
 
     _bindPickerEvents(body, grid, overlay, searchInput, filterSelect, selectedMedia) {
+        const directoryBar = body.querySelector('[data-picker-directories]');
+        if (directoryBar) {
+            fetch(`${this.urlValue.replace('/picker', '/directories')}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(response => response.ok ? response.json() : null)
+                .then(data => {
+                    if (!data?.directories) return;
+                    const tree = directoryBar.querySelector('ul');
+                    tree.innerHTML = '';
+                    const paths = [...new Set(['home', ...data.directories])]
+                        .filter(path => typeof path === 'string' && /^home(?:\/[a-zA-Z0-9_-]+)*$/.test(path));
+                    const rootNode = { path: 'home', name: 'Home', children: new Map() };
+                    for (const path of paths) {
+                        const segments = path.split('/');
+                        let current = rootNode;
+                        let currentPath = 'home';
+                        for (const segment of segments.slice(1)) {
+                            currentPath += `/${segment}`;
+                            if (!current.children.has(segment)) {
+                                current.children.set(segment, { path: currentPath, name: segment, children: new Map() });
+                            }
+                            current = current.children.get(segment);
+                        }
+                    }
+
+                    const renderNode = (node, parent, isRoot = false) => {
+                        const li = document.createElement('li');
+                        li.setAttribute('role', 'treeitem');
+                        li.dataset.path = node.path;
+                        const row = document.createElement('div');
+                        row.className = 'neox-media-tree-row';
+                        if (node.children.size > 0) {
+                            const toggle = document.createElement('button');
+                            toggle.type = 'button';
+                            toggle.className = 'neox-media-tree-toggle';
+                            toggle.textContent = '▸';
+                            toggle.setAttribute('aria-label', `Déplier ${node.name}`);
+                            toggle.setAttribute('aria-expanded', 'false');
+                            row.appendChild(toggle);
+                            toggle.addEventListener('click', () => {
+                                const willOpen = toggle.getAttribute('aria-expanded') !== 'true';
+                                if (willOpen) {
+                                    [...(li.parentElement?.children || [])].forEach(sibling => {
+                                        if (sibling === li || sibling.tagName !== 'LI') return;
+                                        const siblingToggle = sibling.querySelector(':scope > .neox-media-tree-row > .neox-media-tree-toggle');
+                                        if (siblingToggle) siblingToggle._setOpen(false);
+                                    });
+                                }
+                                toggle._setOpen(willOpen);
+                            });
+                            toggle._setOpen = (open) => {
+                                toggle.setAttribute('aria-expanded', String(open));
+                                toggle.textContent = open ? '▾' : '▸';
+                                toggle.setAttribute('aria-label', `${open ? 'Replier' : 'Déplier'} ${node.name}`);
+                                li.classList.toggle('is-open', open);
+                                const childList = li.querySelector(':scope > ul');
+                                if (childList) {
+                                    childList.setAttribute('aria-hidden', String(!open));
+                                    childList.style.height = 'auto';
+                                    if (open) {
+                                        childList.style.height = '0px';
+                                        requestAnimationFrame(() => {
+                                            if (toggle.getAttribute('aria-expanded') === 'true') {
+                                                childList.style.height = `${childList.scrollHeight}px`;
+                                            }
+                                        });
+                                        childList.addEventListener('transitionend', () => {
+                                            if (toggle.getAttribute('aria-expanded') === 'true') childList.style.height = 'auto';
+                                        }, { once: true });
+                                    } else {
+                                        childList.style.height = `${childList.scrollHeight}px`;
+                                        requestAnimationFrame(() => {
+                                            if (toggle.getAttribute('aria-expanded') !== 'true') childList.style.height = '0px';
+                                        });
+                                    }
+                                }
+                            };
+                        } else {
+                            const spacer = document.createElement('span');
+                            spacer.className = 'neox-media-tree-spacer';
+                            row.appendChild(spacer);
+                        }
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'radio';
+                        checkbox.name = 'neox-media-picker-directory';
+                        checkbox.dataset.storageDir = node.path;
+                        checkbox.checked = node.path === 'home';
+                        const name = document.createElement('span');
+                        name.textContent = node.name;
+                        const select = document.createElement('label');
+                        select.append(checkbox, name);
+                        row.appendChild(select);
+                        li.appendChild(row);
+                        parent.appendChild(li);
+                        if (node.children.size > 0) {
+                            const childList = document.createElement('ul');
+                            childList.setAttribute('role', 'group');
+                            childList.style.height = '0px';
+                            for (const child of node.children.values()) renderNode(child, childList);
+                            li.appendChild(childList);
+                        }
+                        return li;
+                    };
+
+                    const unsorted = { path: '__root__', name: 'Non classés', children: new Map() };
+                    renderNode(unsorted, tree);
+                    const homeItem = renderNode(rootNode, tree, true);
+                    homeItem.querySelector(':scope > .neox-media-tree-row > .neox-media-tree-toggle')?._setOpen(true);
+                })
+                .catch(() => {});
+        }
+        directoryBar?.addEventListener('click', (event) => {
+            const checkbox = event.target.closest('input[data-storage-dir]');
+            if (!checkbox) return;
+            directoryBar.querySelectorAll('input[data-storage-dir]').forEach((input) => {
+                if (input !== checkbox) input.checked = false;
+            });
+            const selected = [...directoryBar.querySelectorAll('input[data-storage-dir]:checked')].map(input => input.dataset.storageDir);
+            this.storageDir = selected.length ? selected.filter(path => path !== '__root__').join(',') || '__root__' : 'home';
+            this._loadPickerGrid(grid, overlay, searchInput?.value || '', filterSelect?.value || '');
+        });
         body.addEventListener('click', (e) => {
             const card = e.target.closest('[data-id]');
             if (!card || !grid?.contains(card)) return;
@@ -465,9 +618,12 @@ export default class extends Controller {
             card.className = 'neox-media-card';
             card.dataset.id = media.id;
 
-            const thumb = media.thumbUrl
+            const hls = media.mimeType === 'application/vnd.apple.mpegurl' || /\.m3u8(?:$|\?)/i.test(media.name || '');
+            const thumb = media.type === 'image' && media.thumbUrl
                 ? `<img src="${media.thumbUrl}" alt="" loading="lazy">`
-                : (media.source === 'embed' ? `<span class="neox-media-icon">🎬</span>` : `<span class="neox-media-icon">📄</span>`);
+                : media.type === 'video' && !hls && media.url
+                    ? `<video src="${media.url}" muted playsinline preload="metadata"></video>`
+                    : `<span class="neox-media-icon">${media.type === 'video' || media.source === 'embed' ? '🎬' : '📄'}${hls ? ' HLS' : ''}</span>`;
             const title = media.title || media.name || `#${media.id}`;
 
             card.innerHTML = `
@@ -493,6 +649,7 @@ export default class extends Controller {
             const params = new URLSearchParams();
             if (query) params.set('q', query);
             if (type) params.set('type', type);
+            if (this.storageDir) params.set('storage_dir', this.storageDir);
             params.set('limit', '60');
 
             const response = await fetch(`${this.urlValue.replace('/picker', '/api')}?${params}`, {
@@ -635,11 +792,10 @@ export default class extends Controller {
             </button>`;
 
         if (media) {
-            const thumb = media.thumbUrl
+            const hls = media.mimeType === 'application/vnd.apple.mpegurl' || /\.m3u8(?:$|\?)/i.test(media.name || '');
+            const thumb = media.type === 'image' && media.thumbUrl
                 ? `<img src="${media.thumbUrl}" alt="" loading="lazy">`
-                : (media.source === 'embed'
-                    ? '<div class="neox-media-form-picker-card-icon">🎬</div>'
-                    : '<div class="neox-media-form-picker-card-icon">📄</div>');
+                : `<div class="neox-media-form-picker-card-icon">${media.type === 'video' || media.source === 'embed' ? '🎬' : '📄'}${hls ? '<small>HLS</small>' : ''}</div>`;
             const name = media.title || media.name || `Média #${id}`;
 
             card.innerHTML = `
@@ -738,6 +894,7 @@ export default class extends Controller {
         try {
             const body = new FormData();
             [...files].forEach(f => body.append('files[]', f));
+            body.append('storage_dir', this.storageDir === '__root__' ? 'home' : (this.storageDir || 'home'));
 
             const response = await fetch(this.uploadUrlValue, {
                 method: 'POST',

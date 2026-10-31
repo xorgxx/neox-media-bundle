@@ -3,6 +3,15 @@
 Organiser les fichiers uploadés en sous-répertoires de la destination —
 par exemple **un répertoire par compagnie** — sans aucun système de droits.
 
+> **Racine fixe.** Les nouveaux répertoires de la médiathèque commencent par
+> `home` (`home`, `home/video`, `home/video/films`). Les chemins arbitraires et
+> les traversals sont refusés. Les anciens médias avec `storage_dir = null`
+> restent accessibles dans « Non classés ».
+
+Les répertoires créés depuis la médiathèque sont persistés dans
+`MediaDirectory`. Ils peuvent exister même lorsqu'ils ne contiennent encore
+aucun média.
+>
 > **Opt-in.** Désactivé par défaut : les fichiers sont stockés à plat dans
 > `uploads/media/` exactement comme avant.
 

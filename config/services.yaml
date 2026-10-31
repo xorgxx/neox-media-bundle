@@ -41,6 +41,10 @@ services:
         arguments:
             $storage: '@Neox\MediaBundle\Storage\FilesystemStorageAdapter'
 
+    Neox\MediaBundle\Command\SyncMediaFilesCommand:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     Neox\MediaBundle\Embed\EmbedProviderRegistry:
         arguments:
             $providers: !tagged_iterator neox_media.embed_provider

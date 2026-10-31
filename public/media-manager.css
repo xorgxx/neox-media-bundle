@@ -588,3 +588,24 @@ hr { border: 0; border-top: 1px solid var(--border-light); margin: 16px 0; }
     .neox-media-sidebar { display: none; }
     .neox-media-inspector { border-left: 0; border-top: 1px solid var(--border); }
 }
+.neox-media-picker-directories { padding:10px 0 12px; border-bottom:1px solid var(--border, #273244); max-height:190px; overflow:auto; }
+.neox-media-picker-content { display:grid; grid-template-columns:210px minmax(0,1fr); gap:18px; min-height:360px; }
+.neox-media-picker-content .neox-media-picker-directories { border-bottom:0; border-right:1px solid var(--border, #273244); padding:14px 14px 14px 0; max-height:420px; }
+.neox-media-picker-directories > strong { display:block; margin:0 0 10px; color:var(--text-muted, #94a3b8); font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
+.neox-media-picker-directories ul { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+.neox-media-picker-directories li > ul { margin-left:18px; overflow:hidden; transition:height .22s ease; }
+.neox-media-picker-directories li { padding-top:1px; padding-bottom:1px; border-radius:7px; }
+.neox-media-picker-directories label { display:flex; gap:9px; align-items:center; min-height:29px; padding:4px 9px; border-radius:7px; color:var(--text, #e5e7eb); cursor:pointer; }
+.neox-media-picker-directories label:hover { background:rgba(99,102,241,.14); }
+.neox-media-picker-directories input[type="checkbox"], .neox-media-picker-directories input[type="radio"] { width:16px; height:16px; accent-color:#818cf8; flex:0 0 auto; }
+.neox-media-tree-row { display:flex; align-items:center; min-height:36px; gap:4px; }
+.neox-media-tree-row > label { flex:1; min-width:0; }
+.neox-media-tree-spacer, .neox-media-tree-toggle { width:22px; height:22px; flex:0 0 22px; }
+.neox-media-tree-toggle { width:18px; height:18px; margin-right:2px; padding:0; border:0; background:transparent; color:inherit; cursor:pointer; font-size:14px; }
+.neox-media-picker-directories li { transition: opacity .18s ease, max-height .22s ease, transform .22s ease; }
+.neox-media-picker-directories li[hidden] { display:block; max-height:0; opacity:0; overflow:hidden; transform:translateY(-3px); pointer-events:none; }
+@media (max-width: 700px) { .neox-media-picker-content { grid-template-columns:1fr; } .neox-media-picker-content .neox-media-picker-directories { border-right:0; border-bottom:1px solid var(--border, #273244); max-height:150px; padding-right:0; } }
+.neox-media-directories ul { list-style:none; margin:0; padding:0; }
+.neox-media-directories li { margin:2px 0; }
+.neox-media-directories button { display:block; width:100%; text-align:left; border:0; background:transparent; color:inherit; border-radius:6px; padding:7px 10px; cursor:pointer; }
+.neox-media-directories button:hover, .neox-media-directories button.active { background:rgba(99,102,241,.16); color:#818cf8; }

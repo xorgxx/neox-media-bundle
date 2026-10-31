@@ -23,10 +23,16 @@
         <button type="button" data-picker-url-add>Ajouter</button>
     </div>
 
-    <div class="neox-media-grid-wrapper">
-        <div class="neox-media-overlay" data-neox-media-library-target="overlay" hidden>
-            <div class="neox-media-spinner"></div>
+    <div class="neox-media-picker-content">
+        <aside class="neox-media-picker-directories" data-picker-directories>
+            <strong>Répertoires</strong>
+            <ul role="tree" aria-label="Répertoires média"></ul>
+        </aside>
+        <div class="neox-media-grid-wrapper">
+            <div class="neox-media-overlay" data-neox-media-library-target="overlay" hidden>
+                <div class="neox-media-spinner"></div>
+            </div>
+            <div class="neox-media-grid" data-neox-media-library-target="grid"></div>
         </div>
-        <div class="neox-media-grid" data-neox-media-library-target="grid"></div>
     </div>
 </div>

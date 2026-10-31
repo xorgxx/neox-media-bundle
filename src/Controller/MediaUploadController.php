@@ -87,12 +87,21 @@ final class MediaUploadController extends AbstractController
                 );
             }
 
-            // Physical subdirectory decided by the host app (e.g. per-company).
-            if ($this->directoryProvider !== null) {
+            $requestedDir = $request->request->get('storage_dir');
+            if ($requestedDir !== null && (!is_string($requestedDir) || !preg_match('/^home(?:\/[a-zA-Z0-9_-]+)*$/', $requestedDir))) {
+                $errors[] = 'Invalid storage directory.';
+                continue;
+            }
+            // The UI may select a home descendant; the host provider remains the fallback.
+            if (is_string($requestedDir) && $requestedDir !== '') {
+                $media->setStorageDir($requestedDir);
+            } elseif ($this->directoryProvider !== null) {
                 $dirKey = $this->directoryProvider->getDirectoryKey();
                 if ($dirKey !== null && $dirKey !== '') {
-                    $media->setStorageDir($dirKey);
+                    $media->setStorageDir(str_starts_with($dirKey, 'home') ? $dirKey : 'home/'.$dirKey);
                 }
+            } else {
+                $media->setStorageDir('home');
             }
 
             if ($validation->isSandboxed()) {

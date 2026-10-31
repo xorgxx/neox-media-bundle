@@ -2,7 +2,7 @@ import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
     static targets = ['input', 'progress', 'error', 'dropzone'];
-    static values = { url: String, csrf: String };
+    static values = { url: String, csrf: String, storageDir: { type: String, default: 'home' } };
 
     choose(event) {
         if (event?.target === this.inputTarget) return;
@@ -35,6 +35,7 @@ export default class extends Controller {
 
         const body = new FormData();
         files.forEach(file => body.append('files[]', file));
+        body.append('storage_dir', this.storageDirValue || 'home');
 
         this.dispatch('started', { detail: { count: files.length } });
         this.showProgress(0);

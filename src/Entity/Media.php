@@ -69,7 +69,8 @@ class Media
     private ?string $storageKey = null;
 
     /**
-     * Physical subdirectory under the upload destination (e.g. "acme-corp").
+     * Physical subdirectory under the upload destination. New media lives under
+     * the fixed `home` root; null is retained for legacy media.
      * Set once at upload time by MediaDirectoryProviderInterface.
      * null = stored at the root (flat layout).
      */
