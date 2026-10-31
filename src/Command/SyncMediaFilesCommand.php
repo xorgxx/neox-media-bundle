@@ -14,12 +14,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class SyncMediaFilesCommand extends Command
 {
     public function __construct(private readonly MediaFileSynchronizer $synchronizer, private readonly string $projectDir)
-    { parent::__construct(); }
+    {
+        parent::__construct();
+    }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $result = $this->synchronizer->synchronize($this->projectDir.'/public/uploads/media');
         $output->writeln(sprintf('Imported: %d; skipped: %d', $result['imported'], $result['skipped']));
+
         return Command::SUCCESS;
     }
 }

@@ -9,25 +9,25 @@ use Neox\MediaBundle\Embed\EmbedProviderRegistry;
 use Neox\MediaBundle\Entity\Media;
 use Neox\MediaBundle\Entity\MediaCollection;
 use Neox\MediaBundle\Entity\MediaCollectionItem;
-use Neox\MediaBundle\Entity\MediaShare;
 use Neox\MediaBundle\Entity\MediaDirectory;
+use Neox\MediaBundle\Entity\MediaShare;
 use Neox\MediaBundle\Enum\MediaSource;
 use Neox\MediaBundle\Enum\MediaType;
 use Neox\MediaBundle\Enum\MediaVisibility;
 use Neox\MediaBundle\Ownership\MediaOwnerProviderInterface;
 use Neox\MediaBundle\Repository\MediaCollectionRepository;
+use Neox\MediaBundle\Repository\MediaDirectoryRepository;
 use Neox\MediaBundle\Repository\MediaRepository;
 use Neox\MediaBundle\Repository\MediaShareRepository;
-use Neox\MediaBundle\Repository\MediaDirectoryRepository;
 use Neox\MediaBundle\Security\MediaVoter;
+use Neox\MediaBundle\Service\MediaFileSynchronizer;
 use Neox\MediaBundle\Service\MediaUrlGenerator;
 use Neox\MediaBundle\Service\UrlValidator;
-use Neox\MediaBundle\Service\MediaFileSynchronizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
@@ -212,8 +212,7 @@ final class MediaManagerController extends AbstractController
         MediaDirectoryRepository $directories,
         MediaRepository $mediaRepository,
         #[Autowire('%kernel.project_dir%')] string $projectDir,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $this->checkAccess();
         $paths = ['home'];
         foreach ($directories->findBy([], ['path' => 'ASC']) as $directory) {
@@ -226,7 +225,9 @@ final class MediaManagerController extends AbstractController
             }
             if (is_string($path) && preg_match('/^home(?:\/[a-zA-Z0-9_-]+)*$/', $path)) {
                 $parts = explode('/', $path);
-                foreach (array_keys($parts) as $index) $paths[] = implode('/', array_slice($parts, 0, $index + 1));
+                foreach (array_keys($parts) as $index) {
+                    $paths[] = implode('/', array_slice($parts, 0, $index + 1));
+                }
             }
         }
         // Include physical directories even when they only contain HLS segments
@@ -235,20 +236,27 @@ final class MediaManagerController extends AbstractController
             $projectDir.'/public/uploads/media/home' => 'home',
             $projectDir.'/public/uploads/media/hls' => 'home/hls', // legacy HLS output
         ] as $physicalRoot => $logicalRoot) {
-            if (!is_dir($physicalRoot)) continue;
+            if (!is_dir($physicalRoot)) {
+                continue;
+            }
             $paths[] = $logicalRoot;
             $iterator = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($physicalRoot, \FilesystemIterator::SKIP_DOTS),
                 \RecursiveIteratorIterator::SELF_FIRST,
             );
             foreach ($iterator as $entry) {
-                if (!$entry->isDir()) continue;
+                if (!$entry->isDir()) {
+                    continue;
+                }
                 $relative = str_replace('\\', '/', substr($entry->getPathname(), strlen(rtrim($physicalRoot, DIRECTORY_SEPARATOR)) + 1));
                 $path = $logicalRoot.'/'.trim($relative, '/');
-                if (preg_match('/^home(?:\/[a-zA-Z0-9_-]+)*$/', $path)) $paths[] = $path;
+                if (preg_match('/^home(?:\/[a-zA-Z0-9_-]+)*$/', $path)) {
+                    $paths[] = $path;
+                }
             }
         }
         sort($paths);
+
         return $this->json(['directories' => array_values(array_unique($paths))]);
     }
 
@@ -263,9 +271,13 @@ final class MediaManagerController extends AbstractController
             return $this->json(['error' => 'Invalid directory'], 422);
         }
         $path = $parent.'/'.$name;
-        if ($directories->findOneBy(['path' => $path])) return $this->json(['error' => 'Directory already exists'], 409);
+        if ($directories->findOneBy(['path' => $path])) {
+            return $this->json(['error' => 'Directory already exists'], 409);
+        }
         $entity = new MediaDirectory($name, $path, $directories->findOneBy(['path' => $parent]));
-        $em->persist($entity); $em->flush();
+        $em->persist($entity);
+        $em->flush();
+
         return $this->json(['path' => $path], 201);
     }
 
@@ -273,6 +285,7 @@ final class MediaManagerController extends AbstractController
     public function syncFiles(MediaFileSynchronizer $synchronizer, #[Autowire('%kernel.project_dir%')] string $projectDir): JsonResponse
     {
         $this->checkAccess();
+
         return $this->json($synchronizer->synchronize($projectDir.'/public/uploads/media'));
     }
 
