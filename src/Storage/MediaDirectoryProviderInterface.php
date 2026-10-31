@@ -24,7 +24,8 @@ interface MediaDirectoryProviderInterface
 {
     /**
      * Opaque directory key for the file being uploaded, or null for root.
-     * The bundle sanitizes it (no "..", "/", "\") before use.
+     * The bundle normalizes separators and preserves safe subdirectory
+     * segments. Traversal and unsafe characters are removed before use.
      */
     public function getDirectoryKey(): ?string;
 }

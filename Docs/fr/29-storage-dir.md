@@ -94,10 +94,11 @@ métier.
 
 ## Note sécurité
 
-`SubjectDirectoryNamer::sanitize()` est appliqué systématiquement : traversal
-(`..`), séparateurs, octets NUL et caractères exotiques sont supprimés. Vous
-pouvez retourner des slugs bruts — ils sont normalisés avant de toucher le
-filesystem.
+`SubjectDirectoryNamer::sanitize()` est appliqué systématiquement : les
+séparateurs `/` et `\\` sont normalisés pour conserver une arborescence sûre
+(par exemple `home/video`), tandis que les segments de traversal (`..`), les
+octets NUL et les caractères exotiques sont filtrés. Vous pouvez retourner des
+chemins bruts — ils sont normalisés avant de toucher le filesystem.
 
 ## Combinaison avec les smart folders
 

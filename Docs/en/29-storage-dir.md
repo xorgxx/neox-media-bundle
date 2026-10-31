@@ -88,10 +88,11 @@ code, `"shared"`, a constant. The bundle never guesses your domain model.
 
 ## Security note
 
-`SubjectDirectoryNamer::sanitize()` is applied systematically: traversal
-(`..`), path separators, NUL bytes and exotic characters are stripped.
-You may return raw slugs — they are still normalized before touching the
-filesystem.
+`SubjectDirectoryNamer::sanitize()` is applied systematically: `/` and `\\`
+separators are normalized to preserve a safe directory hierarchy (for example
+`home/video`), while traversal (`..`) segments, NUL bytes and exotic characters
+are filtered. You may return raw paths — they are normalized before touching
+the filesystem.
 
 ## Combining with smart folders
 
