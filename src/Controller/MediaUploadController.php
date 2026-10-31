@@ -97,7 +97,7 @@ final class MediaUploadController extends AbstractController
                 $media->setStorageDir($requestedDir);
             } elseif ($this->directoryProvider !== null) {
                 $dirKey = $this->directoryProvider->getDirectoryKey();
-                if ($dirKey !== null && $dirKey !== '') {
+                if ($dirKey !== null) {
                     $media->setStorageDir(str_starts_with($dirKey, 'home') ? $dirKey : 'home/'.$dirKey);
                 }
             } else {
