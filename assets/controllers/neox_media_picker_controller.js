@@ -618,12 +618,15 @@ export default class extends Controller {
             card.className = 'neox-media-card';
             card.dataset.id = media.id;
 
-            const hls = media.mimeType === 'application/vnd.apple.mpegurl' || /\.m3u8(?:$|\?)/i.test(media.name || '');
-            const thumb = media.thumbUrl
+            const hls = /mpegurl|vnd\.apple\.mpegurl/i.test(media.mimeType || '')
+                || /\.m3u8(?:$|[?#])/i.test(`${media.name || ''} ${media.url || ''}`);
+            const thumb = hls && media.type === 'video'
+                ? `<img src="${escapeHtml(this._hlsPosterUrl())}" alt="Aperçu vidéo HLS" loading="lazy">`
+                : media.thumbUrl
                 ? `<img src="${escapeHtml(media.thumbUrl)}" alt="" loading="lazy">`
-                : media.type === 'video' && !hls && media.url
+                : media.type === 'video' && media.url
                     ? `<video src="${media.url}" muted playsinline preload="metadata"></video>`
-                    : `<span class="neox-media-icon">${media.type === 'video' || media.source === 'embed' ? '🎬' : '📄'}${hls ? ' HLS' : ''}</span>`;
+                    : `<span class="neox-media-icon">${media.type === 'video' || media.source === 'embed' ? '🎬' : '📄'}</span>`;
             const title = media.title || media.name || `#${media.id}`;
 
             card.innerHTML = `
@@ -639,6 +642,11 @@ export default class extends Controller {
         if (data.items?.length === 0) {
             grid.innerHTML = '<small style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted)">Aucun média trouvé</small>';
         }
+    }
+
+    _hlsPosterUrl() {
+        const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#25244a"/><stop offset="1" stop-color="#111827"/></linearGradient></defs><rect width="640" height="360" fill="url(#g)"/><circle cx="320" cy="165" r="54" fill="#818cf8" fill-opacity=".22"/><path d="m306 135 48 30-48 30z" fill="#c7d2fe"/><text x="320" y="270" fill="#c7d2fe" font-family="Arial,sans-serif" font-size="22" text-anchor="middle" letter-spacing="5">HLS VIDEO</text></svg>';
+        return `data:image/svg+xml,${encodeURIComponent(svg)}`;
     }
 
     async _loadPickerGrid(grid, overlay, query, type) {
