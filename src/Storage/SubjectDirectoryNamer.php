@@ -64,6 +64,12 @@ final class SubjectDirectoryNamer implements DirectoryNamerInterface
             }
         }
 
+        // `home` is the logical root of the media library, not a physical
+        // child directory: home/video maps to <upload_destination>/video.
+        if (($safe[0] ?? null) === 'home') {
+            array_shift($safe);
+        }
+
         return implode('/', $safe);
     }
 }

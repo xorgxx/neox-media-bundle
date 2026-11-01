@@ -37,6 +37,9 @@ final class SubjectDirectoryNamerTest extends TestCase
     public static function sanitizeProvider(): iterable
     {
         yield 'simple slug' => ['acme-corp', 'acme-corp'];
+        yield 'home root' => ['home', ''];
+        yield 'home child' => ['home/video', 'video'];
+        yield 'home nested child' => ['home/hls/film', 'hls/film'];
         yield 'path traversal' => ['../../etc/passwd', 'etc/passwd'];
         yield 'backslashes' => ['a\\b\\c', 'a/b/c'];
         yield 'forward slashes' => ['a/b/c', 'a/b/c'];

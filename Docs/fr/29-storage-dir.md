@@ -8,6 +8,10 @@ par exemple **un répertoire par compagnie** — sans aucun système de droits.
 > les traversals sont refusés. Les anciens médias avec `storage_dir = null`
 > restent accessibles dans « Non classés ».
 
+`home` est une racine logique : elle correspond directement à
+`public/uploads/media/`, et non à un sous-dossier physique `.../home`. Ainsi,
+`home/video` est stocké dans `public/uploads/media/video/`.
+
 Les répertoires créés depuis la médiathèque sont persistés dans
 `MediaDirectory`. Ils peuvent exister même lorsqu'ils ne contiennent encore
 aucun média.

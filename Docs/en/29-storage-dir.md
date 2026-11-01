@@ -6,6 +6,10 @@ Organize uploaded files into subdirectories of the upload destination — e.g.
 > **Fixed root.** New media-manager directories start at `home` (`home`,
 > `home/video`, `home/video/films`). Arbitrary paths and traversal are rejected.
 > Legacy media with `storage_dir = null` remains available under “Unsorted”.
+
+`home` is a logical root that maps directly to `public/uploads/media/`, not to
+a physical `.../home` directory. For example, `home/video` is stored in
+`public/uploads/media/video/`.
 >
 > **Opt-in.** Disabled by default: files are stored flat in
 > `uploads/media/` exactly as before.
