@@ -182,6 +182,8 @@ final class MediaManagerController extends AbstractController
                     'thumbUrl' => $m->getMetadata()['thumbnail_url'] ?? $urls->filter($m, 'neox_media_thumb'),
                     'width' => $m->getWidth(),
                     'height' => $m->getHeight(),
+                    'duration' => $m->getDuration(),
+                    'hls' => $m->getMetadata()['hls'] ?? null,
                     'owner' => $m->getOwner(),
                     'visibility' => $m->getVisibility()->value,
                     'storageDir' => $m->getStorageDir(),

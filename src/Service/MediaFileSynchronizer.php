@@ -13,8 +13,10 @@ use Symfony\Component\Mime\MimeTypes;
 
 final class MediaFileSynchronizer
 {
-    public function __construct(private readonly EntityManagerInterface $em)
-    {
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly HlsPlaylistMetadataReader $hlsMetadataReader,
+    ) {
     }
 
     /** @return array{imported:int, skipped:int} */
@@ -54,6 +56,9 @@ final class MediaFileSynchronizer
                     $media->setType(MediaType::VIDEO)->setMimeType('application/vnd.apple.mpegurl');
                     $updated = true;
                 }
+                if ($isHls && $this->applyHlsMetadata($media, $file->getPathname(), $root)) {
+                    $updated = true;
+                }
                 if ($updated) {
                     ++$imported;
                 } else {
@@ -70,6 +75,9 @@ final class MediaFileSynchronizer
                 ->setStatus(MediaStatus::READY)
                 ->setSize($file->getSize())
                 ->setTitle($isHls ? basename(dirname($file->getPathname())) : pathinfo($name, PATHINFO_FILENAME));
+            if ($isHls) {
+                $this->applyHlsMetadata($media, $file->getPathname(), $root);
+            }
             $this->em->persist($media);
             $known[$key] = $media;
             ++$imported;
@@ -77,5 +85,35 @@ final class MediaFileSynchronizer
         $this->em->flush();
 
         return ['imported' => $imported, 'skipped' => $skipped];
+    }
+
+    private function applyHlsMetadata(Media $media, string $manifestPath, string $root): bool
+    {
+        $hls = $this->hlsMetadataReader->read($manifestPath, $root);
+        if ($hls === []) {
+            return false;
+        }
+
+        $metadata = $media->getMetadata();
+        $changed = ($metadata['hls'] ?? null) !== $hls;
+        if ($changed) {
+            $metadata['hls'] = $hls;
+            $media->setMetadata($metadata);
+        }
+
+        if (isset($hls['width']) && $media->getWidth() !== $hls['width']) {
+            $media->setWidth($hls['width']);
+            $changed = true;
+        }
+        if (isset($hls['height']) && $media->getHeight() !== $hls['height']) {
+            $media->setHeight($hls['height']);
+            $changed = true;
+        }
+        if (isset($hls['duration']) && $media->getDuration() !== $hls['duration']) {
+            $media->setDuration($hls['duration']);
+            $changed = true;
+        }
+
+        return $changed;
     }
 }

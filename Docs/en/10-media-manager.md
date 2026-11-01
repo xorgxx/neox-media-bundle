@@ -30,6 +30,10 @@ Video media can provide a poster URL through `metadata.thumbnail_url`. The
 Media Manager and picker use it as the preview, including for HLS playlists.
 The bundle does not generate an image from a playlist itself; the host
 application can set this metadata when it creates the HLS output.
+During synchronization, local HLS playlists are also inspected for variant
+qualities/resolutions, codecs, container, and duration when the playlists
+provide that information. These values populate `width`, `height`, `duration`,
+and `metadata.hls`; they are not guessed from the media segments.
 
 ### HLS preview
 

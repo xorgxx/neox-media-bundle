@@ -30,6 +30,11 @@ Les médias vidéo peuvent fournir une URL de vignette dans `metadata.thumbnail_
 Le Media Manager et le picker l'utilisent comme poster, y compris pour une
 playlist HLS. Le bundle ne génère pas lui-même d'image depuis une playlist :
 l'application hôte peut définir cette métadonnée lors de la génération HLS.
+Lors de la synchronisation, les playlists HLS locales sont aussi analysées pour
+extraire les qualités/résolutions, les codecs, le conteneur et la durée si les
+informations figurent dans les playlists. Ces valeurs alimentent les champs
+`width`, `height`, `duration` et `metadata.hls` ; elles ne sont pas estimées
+depuis les segments.
 
 ### Prévisualisation HLS
 

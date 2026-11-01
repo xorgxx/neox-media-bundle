@@ -520,9 +520,24 @@ export default class extends Controller {
             this.titleTarget.value = media.title || '';
             this.altTarget.value = media.alt || '';
             this.descriptionTarget.value = media.description || '';
-            this.metaTarget.textContent = `${media.mimeType || media.type} · ${formatFileSize(media.size)}${media.width ? ` · ${media.width}×${media.height}` : ''}${media.sandboxed ? ` · Sandbox: ${media.riskReason || media.riskLevel}` : ''}`;
+            const format = media.hls?.container ? `HLS · ${media.hls.container}` : (media.hls?.format || media.mimeType || media.type);
+            const resolution = media.width && media.height ? ` · ${media.width}×${media.height}` : '';
+            const duration = Number.isFinite(Number(media.duration)) && Number(media.duration) > 0
+                ? ` · ${this.formatDuration(Number(media.duration))}`
+                : '';
+            this.metaTarget.textContent = `${format} · ${formatFileSize(media.size)}${resolution}${duration}${media.sandboxed ? ` · Sandbox: ${media.riskReason || media.riskLevel}` : ''}`;
             this.updateDownloadButton(media);
         }
+    }
+
+    formatDuration(seconds) {
+        const total = Math.round(seconds);
+        const hours = Math.floor(total / 3600);
+        const minutes = Math.floor((total % 3600) / 60);
+        const remainder = total % 60;
+        return hours > 0
+            ? `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`
+            : `${minutes}:${String(remainder).padStart(2, '0')}`;
     }
 
     initTheme() {
