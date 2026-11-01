@@ -417,15 +417,15 @@ export default class extends Controller {
             if (media.thumbUrl) return `<img src="${escapeHtml(media.thumbUrl)}" alt="" loading="lazy">`;
             return `<div class="neox-media-icon">🎬</div>`;
         }
-        if (media.thumbUrl && media.type !== 'image' && !full) {
-            return `<img src="${escapeHtml(media.thumbUrl)}" alt="" loading="lazy">`;
-        }
         if (media.type === 'video' && this.isHlsMedia(media)) {
             if (!full) return `<img src="${escapeHtml(this.hlsPosterUrl())}" alt="Aperçu HLS" loading="lazy">`;
             const url = escapeHtml(media.url || '');
             return url
                 ? `<video src="${url}" controls playsinline preload="metadata" aria-label="Lecture de la vidéo HLS"></video>`
                 : '<div class="neox-media-hls-message" role="status">URL de lecture HLS indisponible.</div>';
+        }
+        if (media.thumbUrl && media.type !== 'image' && !full) {
+            return `<img src="${escapeHtml(media.thumbUrl)}" alt="" loading="lazy">`;
         }
         const thumb = full ? (media.url || media.thumbUrl) : (media.thumbUrl || media.url);
         const url = escapeHtml(thumb || '');
