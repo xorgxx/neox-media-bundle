@@ -618,9 +618,14 @@ export default class extends Controller {
             card.className = 'neox-media-card';
             card.dataset.id = media.id;
 
+            const mediaRef = `${media.mimeType || ''} ${media.name || ''} ${media.url || ''}`;
             const hls = /mpegurl|vnd\.apple\.mpegurl/i.test(media.mimeType || '')
-                || /\.m3u8(?:$|[?#])/i.test(`${media.name || ''} ${media.url || ''}`);
-            const video = media.type === 'video';
+                || /\.m3u8(?:$|[?#])/i.test(mediaRef);
+            // Some hosts report unfamiliar video MIME types as "document" or "other".
+            // Fall back to the filename/URL extension so these files still get a poster.
+            const video = media.type === 'video'
+                || /^video\//i.test(media.mimeType || '')
+                || /\.(?:mp4|m4v|mov|webm|ogv|mkv|avi|mpeg|mpg|3gp|ts|m3u8)(?:$|[?#])/i.test(mediaRef);
             const poster = video ? escapeHtml(this._videoPosterUrl(hls)) : '';
             const thumb = hls && video
                 ? `<img src="${poster}" alt="Aperçu vidéo HLS" loading="lazy">`
