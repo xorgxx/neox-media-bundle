@@ -95,7 +95,7 @@ final class HlsPlaylistMetadataReader
     }
 
     /** @param list<string> $lines
-     *  @return list<array{uri: string, width?: int, height?: int, bandwidth?: int, codecs?: string}>
+     * @return list<array{uri: string, width?: int, height?: int, bandwidth?: int, codecs?: string}>
      */
     private function parseVariants(array $lines): array
     {

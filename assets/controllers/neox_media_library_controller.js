@@ -421,10 +421,11 @@ export default class extends Controller {
             return `<img src="${escapeHtml(media.thumbUrl)}" alt="" loading="lazy">`;
         }
         if (media.type === 'video' && this.isHlsMedia(media)) {
-            if (!full) return '<div class="neox-media-icon" title="Playlist HLS">🎬</div>';
+            const poster = escapeHtml(this.hlsPosterUrl());
+            if (!full) return `<img src="${poster}" alt="Aperçu HLS" loading="lazy">`;
             const url = escapeHtml(media.url || '');
             return url
-                ? `<video src="${url}" controls playsinline preload="metadata" aria-label="Lecture de la vidéo HLS"></video>`
+                ? `<video src="${url}" poster="${poster}" controls playsinline preload="metadata" aria-label="Lecture de la vidéo HLS"></video>`
                 : '<div class="neox-media-hls-message" role="status">URL de lecture HLS indisponible.</div>';
         }
         const thumb = full ? (media.url || media.thumbUrl) : (media.thumbUrl || media.url);
@@ -438,6 +439,11 @@ export default class extends Controller {
     isHlsMedia(media) {
         return /mpegurl|vnd\.apple\.mpegurl/i.test(media.mimeType || '')
             || /\.m3u8(?:$|[?#])/i.test(`${media.name || ''} ${media.url || ''}`);
+    }
+
+    hlsPosterUrl() {
+        const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#25244a"/><stop offset="1" stop-color="#111827"/></linearGradient></defs><rect width="640" height="360" fill="url(#g)"/><circle cx="320" cy="165" r="54" fill="#818cf8" fill-opacity=".22"/><path d="m306 135 48 30-48 30z" fill="#c7d2fe"/><text x="320" y="270" fill="#c7d2fe" font-family="Arial,sans-serif" font-size="22" text-anchor="middle" letter-spacing="5">HLS VIDEO</text></svg>';
+        return `data:image/svg+xml,${encodeURIComponent(svg)}`;
     }
 
     async mountHlsPlayer(media) {
