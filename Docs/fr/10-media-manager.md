@@ -22,6 +22,15 @@ Le Media Manager fournit :
 - collections ;
 - picker modal.
 
+La barre latérale affiche les répertoires physiques en arbre : chaque dossier
+est placé sous son parent, seul son nom est affiché, et une branche sœur se
+replie lorsqu'une autre est ouverte. Le dossier sélectionné reste visible.
+
+Les médias vidéo peuvent fournir une URL de vignette dans `metadata.thumbnail_url`.
+Le Media Manager et le picker l'utilisent comme poster, y compris pour une
+playlist HLS. Le bundle ne génère pas lui-même d'image depuis une playlist :
+l'application hôte peut définir cette métadonnée lors de la génération HLS.
+
 ## Filtres
 
 Les catégories principales sont :

@@ -609,3 +609,10 @@ hr { border: 0; border-top: 1px solid var(--border-light); margin: 16px 0; }
 .neox-media-directories li { margin:2px 0; }
 .neox-media-directories button { display:block; width:100%; text-align:left; border:0; background:transparent; color:inherit; border-radius:6px; padding:7px 10px; cursor:pointer; }
 .neox-media-directories button:hover, .neox-media-directories button.active { background:rgba(99,102,241,.16); color:#818cf8; }
+.neox-media-directory-row { display:flex; align-items:center; min-width:0; }
+.neox-media-directories .neox-media-directory-toggle,
+.neox-media-directory-spacer { flex:0 0 22px; width:22px; }
+.neox-media-directories .neox-media-directory-toggle { padding:5px 0; text-align:center; color:inherit; }
+.neox-media-directories .neox-media-directory-select { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.neox-media-directory-children { padding-left:14px !important; overflow:hidden; height:0; opacity:0; }
+.neox-media-directories li.is-open > .neox-media-directory-children { height:auto; opacity:1; }

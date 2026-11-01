@@ -619,8 +619,8 @@ export default class extends Controller {
             card.dataset.id = media.id;
 
             const hls = media.mimeType === 'application/vnd.apple.mpegurl' || /\.m3u8(?:$|\?)/i.test(media.name || '');
-            const thumb = media.type === 'image' && media.thumbUrl
-                ? `<img src="${media.thumbUrl}" alt="" loading="lazy">`
+            const thumb = media.thumbUrl
+                ? `<img src="${escapeHtml(media.thumbUrl)}" alt="" loading="lazy">`
                 : media.type === 'video' && !hls && media.url
                     ? `<video src="${media.url}" muted playsinline preload="metadata"></video>`
                     : `<span class="neox-media-icon">${media.type === 'video' || media.source === 'embed' ? '🎬' : '📄'}${hls ? ' HLS' : ''}</span>`;

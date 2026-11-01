@@ -232,27 +232,100 @@ export default class extends Controller {
         const data = await response.json();
         const tree = this.directoriesTarget.querySelector('ul') || this.directoriesTarget;
         tree.innerHTML = '';
-        const add = (path, label, parent) => {
+        const nodes = new Map();
+        const add = (path, parent) => {
             const li = document.createElement('li');
             li.setAttribute('role', 'treeitem');
+            li.dataset.directoryPath = path;
+            const row = document.createElement('div');
+            row.className = 'neox-media-directory-row';
+            const spacer = document.createElement('span');
+            spacer.className = 'neox-media-directory-spacer';
+            spacer.setAttribute('aria-hidden', 'true');
+            row.appendChild(spacer);
             const button = document.createElement('button');
             button.type = 'button';
+            button.className = 'neox-media-directory-select';
             button.dataset.storageDir = path;
             button.dataset.action = 'neox-media-library#filterStorageDir';
-            button.textContent = label;
-            button.style.paddingLeft = `${10 + Math.max(0, path.split('/').length - 1) * 18}px`;
+            button.textContent = path === '__root__' ? 'Non classés' : path === 'home' ? 'Home' : path.split('/').at(-1);
+            button.title = path;
             if (path === this.storageDir) button.classList.add('active');
-            li.appendChild(button);
+            row.appendChild(button);
+            li.appendChild(row);
             parent.appendChild(li);
+            nodes.set(path, li);
+            return li;
         };
-        add('__root__', 'Non classés', tree);
+        add('__root__', tree);
+        const paths = new Set(['home']);
         for (const path of (data.directories || [])) {
-            add(path, path === 'home' ? 'Home' : path.replace(/^home\//, ''), tree);
+            if (typeof path !== 'string' || !/^home(?:\/[a-zA-Z0-9_-]+)*$/.test(path)) continue;
+            const parts = path.split('/');
+            for (let i = 1; i <= parts.length; i++) paths.add(parts.slice(0, i).join('/'));
+        }
+        for (const path of [...paths].sort((a, b) => a.split('/').length - b.split('/').length || a.localeCompare(b))) {
+            const parentPath = path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : null;
+            const parentNode = parentPath ? nodes.get(parentPath) : null;
+            let parentList = tree;
+            if (parentNode) {
+                parentList = parentNode.querySelector(':scope > ul');
+                if (!parentList) {
+                    parentList = document.createElement('ul');
+                    parentList.setAttribute('role', 'group');
+                    parentList.className = 'neox-media-directory-children';
+                    parentNode.appendChild(parentList);
+                    const row = parentNode.querySelector(':scope > .neox-media-directory-row');
+                    const spacer = row.querySelector('.neox-media-directory-spacer');
+                    const toggle = document.createElement('button');
+                    toggle.type = 'button';
+                    toggle.className = 'neox-media-directory-toggle';
+                    toggle.setAttribute('aria-label', `Déplier ${parentPath}`);
+                    toggle.setAttribute('aria-expanded', 'false');
+                    toggle.textContent = '▸';
+                    toggle.addEventListener('click', () => this.setDirectoryExpanded(parentNode, !parentNode.classList.contains('is-open')));
+                    row.replaceChild(toggle, spacer);
+                }
+            }
+            add(path, parentList);
+        }
+        if (this.storageDir !== '__root__') {
+            const selected = nodes.get(this.storageDir);
+            const ancestors = [];
+            for (let node = selected; node && node !== tree; node = node.parentElement?.closest('li[role="treeitem"]')) {
+                if (node.querySelector(':scope > ul')) ancestors.unshift(node);
+            }
+            for (const node of ancestors) this.setDirectoryExpanded(node, true, false);
+        }
+    }
+
+    setDirectoryExpanded(node, expanded, animate = true) {
+        const children = node.querySelector(':scope > ul');
+        if (!children || node.classList.contains('is-open') === expanded) return;
+        if (expanded) {
+            for (const sibling of node.parentElement.children) {
+                if (sibling !== node && sibling.classList.contains('is-open')) this.setDirectoryExpanded(sibling, false);
+            }
+        }
+        const fromHeight = children.getBoundingClientRect().height;
+        children.getAnimations().forEach(animation => animation.cancel());
+        node.classList.toggle('is-open', expanded);
+        const toggle = node.querySelector(':scope > .neox-media-directory-row > .neox-media-directory-toggle');
+        toggle.setAttribute('aria-expanded', String(expanded));
+        toggle.setAttribute('aria-label', `${expanded ? 'Replier' : 'Déplier'} ${node.dataset.directoryPath}`);
+        toggle.textContent = expanded ? '▾' : '▸';
+        if (animate && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            children.animate([
+                { height: `${fromHeight}px`, opacity: expanded ? 0 : 1 },
+                { height: `${expanded ? children.scrollHeight : 0}px`, opacity: expanded ? 1 : 0 },
+            ], { duration: 220, easing: 'ease-in-out' });
         }
     }
 
     filterStorageDir(event) {
         this.storageDir = event.currentTarget.dataset.storageDir || 'home';
+        const node = event.currentTarget.closest('li[role="treeitem"]');
+        if (node?.querySelector(':scope > ul')) this.setDirectoryExpanded(node, true);
         this.offset = 0;
         this.load();
         const upload = this.element.querySelector('[data-controller~="neox-media-upload"]');
@@ -338,6 +411,9 @@ export default class extends Controller {
             }
             if (media.thumbUrl) return `<img src="${escapeHtml(media.thumbUrl)}" alt="" loading="lazy">`;
             return `<div class="neox-media-icon">🎬</div>`;
+        }
+        if (media.thumbUrl && media.type !== 'image' && !full) {
+            return `<img src="${escapeHtml(media.thumbUrl)}" alt="" loading="lazy">`;
         }
         if (media.type === 'video' && (media.mimeType === 'application/vnd.apple.mpegurl' || /\.m3u8(?:$|\?)/i.test(media.name || ''))) {
             return '<div class="neox-media-icon" title="Playlist HLS">🎬</div>';

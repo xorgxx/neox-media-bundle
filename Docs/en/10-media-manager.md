@@ -22,6 +22,15 @@ The Media Manager provides:
 - collections;
 - modal picker.
 
+The sidebar displays physical directories as a tree: each folder appears under
+its parent, only its name is shown, and opening a branch closes its siblings.
+The selected folder stays visible.
+
+Video media can provide a poster URL through `metadata.thumbnail_url`. The
+Media Manager and picker use it as the preview, including for HLS playlists.
+The bundle does not generate an image from a playlist itself; the host
+application can set this metadata when it creates the HLS output.
+
 ## Filters
 
 Main categories:

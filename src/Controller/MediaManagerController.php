@@ -179,7 +179,7 @@ final class MediaManagerController extends AbstractController
                     'url' => $urls->url($m),
                     'embedUrl' => $m->getEmbedUrl(),
                     'provider' => $m->getProvider(),
-                    'thumbUrl' => $urls->filter($m, 'neox_media_thumb'),
+                    'thumbUrl' => $m->getMetadata()['thumbnail_url'] ?? $urls->filter($m, 'neox_media_thumb'),
                     'width' => $m->getWidth(),
                     'height' => $m->getHeight(),
                     'owner' => $m->getOwner(),
@@ -736,7 +736,7 @@ final class MediaManagerController extends AbstractController
                 'source' => $media->getSource()->value,
                 'status' => $media->getStatus()->value,
                 'url' => $urls->url($media),
-                'thumbUrl' => $urls->filter($media, 'neox_media_thumb'),
+                'thumbUrl' => $media->getMetadata()['thumbnail_url'] ?? $urls->filter($media, 'neox_media_thumb'),
             ];
         }
 

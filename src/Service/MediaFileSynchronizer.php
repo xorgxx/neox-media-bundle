@@ -7,6 +7,7 @@ namespace Neox\MediaBundle\Service;
 use Doctrine\ORM\EntityManagerInterface;
 use Neox\MediaBundle\Entity\Media;
 use Neox\MediaBundle\Enum\MediaSource;
+use Neox\MediaBundle\Enum\MediaStatus;
 use Neox\MediaBundle\Enum\MediaType;
 use Symfony\Component\Mime\MimeTypes;
 
@@ -44,8 +45,16 @@ final class MediaFileSynchronizer
             $isHls = strtolower($file->getExtension()) === 'm3u8';
             if (isset($known[$key])) {
                 $media = $known[$key];
+                $updated = false;
+                if ($media->getStatus() === MediaStatus::PENDING) {
+                    $media->setStatus(MediaStatus::READY);
+                    $updated = true;
+                }
                 if ($isHls && $media->getType() !== MediaType::VIDEO) {
                     $media->setType(MediaType::VIDEO)->setMimeType('application/vnd.apple.mpegurl');
+                    $updated = true;
+                }
+                if ($updated) {
                     ++$imported;
                 } else {
                     ++$skipped;
@@ -56,7 +65,11 @@ final class MediaFileSynchronizer
             $media->setFilename($name)->setOriginalName($name)->setSource(MediaSource::FILE)->setStorageDir($dir);
             $mime = $isHls ? 'application/vnd.apple.mpegurl' : (MimeTypes::getDefault()->guessMimeType($file->getPathname()) ?? 'application/octet-stream');
             $type = $isHls || str_starts_with($mime, 'video/') ? MediaType::VIDEO : (str_starts_with($mime, 'audio/') ? MediaType::AUDIO : (str_starts_with($mime, 'image/') ? MediaType::IMAGE : MediaType::OTHER));
-            $media->setMimeType($mime)->setType($type)->setSize($file->getSize())->setTitle($isHls ? basename(dirname($file->getPathname())) : pathinfo($name, PATHINFO_FILENAME));
+            $media->setMimeType($mime)
+                ->setType($type)
+                ->setStatus(MediaStatus::READY)
+                ->setSize($file->getSize())
+                ->setTitle($isHls ? basename(dirname($file->getPathname())) : pathinfo($name, PATHINFO_FILENAME));
             $this->em->persist($media);
             $known[$key] = $media;
             ++$imported;
