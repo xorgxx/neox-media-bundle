@@ -26,6 +26,7 @@
 │                                                     │
 │ Media Manager                                       │
 │  ├─ Grid                                            │
+│  ├─ HLS preview (native / optional hls.js)          │
 │  ├─ Upload                                          │
 │  ├─ Picker                                          │
 │  ├─ Collections                                     │
@@ -326,6 +327,7 @@ ownership.*            — MediaVoter, MediaShare, owner keys
 folders.*              — collection tree + dynamic rules
 storage.directory.*    — physical per-context subdirectories
 security.access_role   — configurable Media Manager gate
+HLS.js                  — optional host-provided browser playback dependency
 RabbitMQ
 Mercure
 FFmpeg

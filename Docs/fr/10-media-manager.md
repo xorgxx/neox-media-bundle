@@ -31,6 +31,22 @@ Le Media Manager et le picker l'utilisent comme poster, y compris pour une
 playlist HLS. Le bundle ne génère pas lui-même d'image depuis une playlist :
 l'application hôte peut définir cette métadonnée lors de la génération HLS.
 
+### Prévisualisation HLS
+
+Dans l'inspecteur standalone, une playlist `.m3u8` est rendue dans un lecteur
+vidéo. Les navigateurs qui savent lire HLS nativement l'utilisent directement.
+Pour les autres navigateurs, le bundle prend en charge `hls.js` lorsqu'il est
+fourni par l'application hôte ; cette dépendance reste optionnelle. Avec
+Symfony AssetMapper, l'application peut l'ajouter à son import map :
+
+```bash
+php bin/console importmap:require hls.js
+```
+
+Sans `hls.js`, les navigateurs sans prise en charge HLS native affichent un
+message explicatif. La lecture des playlists et segments reste soumise à leurs
+URLs accessibles et aux règles CORS du serveur qui les héberge.
+
 ## Filtres
 
 Les catégories principales sont :

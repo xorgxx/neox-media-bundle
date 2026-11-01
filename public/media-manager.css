@@ -278,6 +278,10 @@ button { cursor: pointer; border: none; }
     display: grid; place-items: center; margin-bottom: 16px;
 }
 .neox-media-preview img, .neox-media-preview video { width: 100%; height: 100%; object-fit: contain; }
+.neox-media-hls-message {
+    color: var(--text-muted); font-size: 12px; line-height: 1.45; text-align: center;
+    padding: 10px 14px; margin: 0;
+}
 .neox-media-meta { color: var(--text-muted); font-size: 11px; margin: 14px 0; line-height: 1.6; }
 .neox-media-inspector-actions { display: flex; gap: 8px; margin-top: 16px; }
 .neox-media-inspector-actions button {

@@ -36,6 +36,7 @@ export default class extends Controller {
         this.items = [];
         this.selected = null;
         this.selectedIds = new Set();
+        this.hlsPlayer = null;
         this.multiSelectMode = false;
         this.collectionId = null;
         this.storageDir = 'home';
@@ -77,6 +78,10 @@ export default class extends Controller {
                 this.uploadToCollection(files, collectionId);
             });
         }
+    }
+
+    disconnect() {
+        this.destroyHlsPlayer();
     }
 
     goBack(event) {
@@ -415,8 +420,12 @@ export default class extends Controller {
         if (media.thumbUrl && media.type !== 'image' && !full) {
             return `<img src="${escapeHtml(media.thumbUrl)}" alt="" loading="lazy">`;
         }
-        if (media.type === 'video' && (media.mimeType === 'application/vnd.apple.mpegurl' || /\.m3u8(?:$|\?)/i.test(media.name || ''))) {
-            return '<div class="neox-media-icon" title="Playlist HLS">🎬</div>';
+        if (media.type === 'video' && this.isHlsMedia(media)) {
+            if (!full) return '<div class="neox-media-icon" title="Playlist HLS">🎬</div>';
+            const url = escapeHtml(media.url || '');
+            return url
+                ? `<video src="${url}" controls playsinline preload="metadata" aria-label="Lecture de la vidéo HLS"></video>`
+                : '<div class="neox-media-hls-message" role="status">URL de lecture HLS indisponible.</div>';
         }
         const thumb = full ? (media.url || media.thumbUrl) : (media.thumbUrl || media.url);
         const url = escapeHtml(thumb || '');
@@ -424,6 +433,63 @@ export default class extends Controller {
         if (media.type === 'video' && url) return `<video src="${url}" muted preload="metadata"></video>`;
         if (media.type === 'audio') return `<div class="neox-media-icon">♫</div>`;
         return `<div class="neox-media-icon">📄</div>`;
+    }
+
+    isHlsMedia(media) {
+        return /mpegurl|vnd\.apple\.mpegurl/i.test(media.mimeType || '')
+            || /\.m3u8(?:$|[?#])/i.test(`${media.name || ''} ${media.url || ''}`);
+    }
+
+    async mountHlsPlayer(media) {
+        this.destroyHlsPlayer();
+        if (media.type !== 'video' || !this.isHlsMedia(media) || !media.url) return;
+
+        const video = this.previewTarget.querySelector('video');
+        if (!video) return;
+
+        // Safari and some other browsers can play HLS natively.
+        if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = media.url;
+            return;
+        }
+
+        try {
+            // hls.js is an optional host-application importmap dependency.
+            const module = await import('hls.js');
+            if (this.selected?.id !== media.id || !video.isConnected) return;
+            const Hls = module.default || module.Hls || module;
+            if (!Hls.isSupported?.()) {
+                this.showHlsMessage('Ce navigateur ne prend pas en charge la lecture HLS.');
+                return;
+            }
+
+            const player = new Hls();
+            this.hlsPlayer = player;
+            player.loadSource(media.url);
+            player.attachMedia(video);
+            player.on(Hls.Events.ERROR, (_event, data) => {
+                if (data?.fatal && this.hlsPlayer === player) {
+                    this.showHlsMessage('La playlist HLS ou ses segments sont indisponibles. Vérifiez leur URL et les droits CORS.');
+                    this.destroyHlsPlayer();
+                }
+            });
+        } catch (error) {
+            console.info('HLS playback needs the optional hls.js import-map entry.', error);
+            this.showHlsMessage('Pour lire HLS dans ce navigateur, ajoutez hls.js à l’import map de l’application.');
+        }
+    }
+
+    showHlsMessage(message) {
+        const notice = document.createElement('p');
+        notice.className = 'neox-media-hls-message';
+        notice.setAttribute('role', 'status');
+        notice.textContent = message;
+        this.previewTarget.appendChild(notice);
+    }
+
+    destroyHlsPlayer() {
+        this.hlsPlayer?.destroy();
+        this.hlsPlayer = null;
     }
 
     select(media, card) {
@@ -450,6 +516,7 @@ export default class extends Controller {
         if (this.hasInspectorTarget) {
             this.inspectorTarget.hidden = false;
             this.previewTarget.innerHTML = this.thumbnail(media, { full: true });
+            this.mountHlsPlayer(media);
             this.titleTarget.value = media.title || '';
             this.altTarget.value = media.alt || '';
             this.descriptionTarget.value = media.description || '';
